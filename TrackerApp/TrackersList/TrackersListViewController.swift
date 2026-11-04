@@ -36,6 +36,10 @@ final class TrackersListViewController: UIViewController {
   private func configTitle() {
     navigationItem.title = "Трекеры"
     navigationController?.navigationBar.prefersLargeTitles = true
+    navigationController?.navigationBar.largeTitleTextAttributes = [
+        .foregroundColor: UIColor.blackYP,
+        .font: UIFont.systemFont(ofSize: 34, weight: .bold)
+      ]
   }
   
   private func configAddTrackerButton() {
