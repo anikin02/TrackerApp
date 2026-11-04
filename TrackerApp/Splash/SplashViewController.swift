@@ -9,7 +9,7 @@ import UIKit
 
 final class SplashViewController: UIViewController {
   // MARK: - UI Elements
-  private var logoImage: UIImageView = .init()
+  private let logoImage: UIImageView = .init()
   
   // MARK: - Lifecycle
   override func viewDidLoad() {
