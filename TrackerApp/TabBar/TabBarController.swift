@@ -16,9 +16,11 @@ final class TabBarController: UITabBarController {
   }
   
   private func setupTabBarItems() {
-    let trackersLisctViewController = TrackersListViewController()
+    let trackersNavigationController = UINavigationController(
+      rootViewController: TrackersListViewController()
+    )
     
-    trackersLisctViewController.tabBarItem = UITabBarItem(
+    trackersNavigationController.tabBarItem = UITabBarItem(
       title: "Трекеры",
       image: UIImage(resource: .trackers),
       selectedImage: nil
@@ -32,13 +34,13 @@ final class TabBarController: UITabBarController {
       selectedImage: nil
     )
     
-    self.viewControllers = [trackersLisctViewController,
+    self.viewControllers = [trackersNavigationController,
                             statisticsViewController]
   }
   
   private func configTabBarAppearance() {
     tabBar.tintColor = .blueYP
     tabBar.unselectedItemTintColor = .grayYP
-    tabBar.backgroundColor = .whiteYP
+    //tabBar.backgroundColor = .whiteYP
   }
 }
