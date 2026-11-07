@@ -60,14 +60,12 @@ enum Mock {
     schedule: Set(WeekDay.allCases),
     isRegular: false
   )
-
   static let categories: [TrackerCategory] = [
     TrackerCategory(title: "Здоровье", trackers: [water, workout]),
     TrackerCategory(title: "Саморазвитие", trackers: [reading]),
     TrackerCategory(title: "Радостные мелочи", trackers: [cat]),
     TrackerCategory(title: "Дела", trackers: [tickets, cleaning, cooking])
   ]
-
   static let completedTrackers: [TrackerRecord] = {
     let calendar = Calendar.current
     let today = calendar.startOfDay(for: Date())
