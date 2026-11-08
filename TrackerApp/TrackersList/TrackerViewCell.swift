@@ -75,7 +75,7 @@ final class TrackerViewCell: UICollectionViewCell {
   }
   
   private func configEmojiLabel() {
-    emojiLabel.font = .systemFont(ofSize: 16, weight: .medium)
+    emojiLabel.font = .systemFont(ofSize: 14, weight: .medium)
     emojiLabel.textAlignment = .center
     emojiLabel.backgroundColor = UIColor.white.withAlphaComponent(0.3)
     emojiLabel.layer.cornerRadius = 12
