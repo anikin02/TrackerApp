@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol TrackersListDelegate: AnyObject {
+  func addNewTracker(tracker: Tracker, category: String)
+}
+
 final class TrackersListViewController: UIViewController {
   // MARK: - UI Elements
   private let dateFilterPicker: UIDatePicker = .init()
@@ -198,10 +202,49 @@ final class TrackersListViewController: UIViewController {
   }
   
   // MARK: - Actions
-  @objc private func addTrackerTapped() {}
+  @objc private func addTrackerTapped() {
+    let viewController = TrackerTypeSelectionViewController()
+    viewController.delegate = self
+    let navController = UINavigationController(rootViewController: viewController)
+    navController.modalPresentationStyle = .pageSheet
+    present(navController, animated: true)
+  }
+  
   @objc private func dateChanged() {
     visibleCategories = getDateCategories()
     collectionView.reloadData()
+  }
+}
+
+// MARK: - TrackersListDelegate
+extension TrackersListViewController: TrackersListDelegate {
+  func addNewTracker(tracker: Tracker, category: String) {
+    if let indexCategories = categories.firstIndex(where: {$0.title == category}) {
+      categories[indexCategories] = TrackerCategory(title: category,
+                                                    trackers: categories[indexCategories].trackers + [tracker])
+    } else {
+      categories.append(TrackerCategory(title: category, trackers: [tracker]))
+    }
+    
+    let oldVisible = visibleCategories
+    let newVisible = getDateCategories()
+    visibleCategories = newVisible
+    
+    guard let section = newVisible.firstIndex(where: { $0.title == category }),
+          let item = newVisible[section].trackers.firstIndex(where: { $0.id == tracker.id })
+            else { return }
+    
+    let sectionExisted = oldVisible.contains { $0.title == category }
+    
+    collectionView.performBatchUpdates {
+      if sectionExisted {
+        collectionView.insertItems(at: [IndexPath(item: item, section: section)])
+      } else {
+        collectionView.insertSections(IndexSet(integer: section))
+      }
+    }
+    
+    hideEmptyState()
   }
 }
 
