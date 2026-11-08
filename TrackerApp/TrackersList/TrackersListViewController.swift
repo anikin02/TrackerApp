@@ -57,11 +57,14 @@ final class TrackersListViewController: UIViewController {
   }
   
   private func configAddTrackerButton() {
+    let icon = UIImage(resource: .navPlus).withRenderingMode(.alwaysTemplate)
     navigationItem.leftBarButtonItem = UIBarButtonItem(
-      barButtonSystemItem: .add,
+      image: icon,
+      style: .plain,
       target: self,
       action: #selector(addTrackerTapped)
     )
+    navigationItem.leftBarButtonItem?.tintColor = .blackYP
   }
   
   private func configDateFilterPicker() {
