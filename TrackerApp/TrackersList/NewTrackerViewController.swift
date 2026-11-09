@@ -23,7 +23,21 @@ final class NewTrackerViewController: UIViewController {
   private let stackButtons: UIStackView = .init()
   
   // MARK: - Private Properties
-  private var options: [String] = []
+  private enum Option {
+    case category
+    case schedule
+    
+    var title: String {
+      switch self {
+        case .category:
+          return "Категория"
+        case .schedule:
+          return "Расписание"
+      }
+    }
+  }
+  
+  private var options: [Option] = []
   private let maxLengthTitle = 38
   private var selectedSchedule: Set<WeekDay> = []
   private var selectedCategory: String?
@@ -32,14 +46,18 @@ final class NewTrackerViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     
-    if isRegularNewTracker {
-      options = ["Категория", "Расписание"]
-    } else {
-      options = ["Категория"]
-      selectedSchedule = Set(WeekDay.allCases)
-    }
+    configureTrackerType()
     
     configureUI()
+  }
+  
+  private func configureTrackerType() {
+    if isRegularNewTracker {
+      options = [.category, .schedule]
+    } else {
+      options = [.category]
+      selectedSchedule = Set(WeekDay.allCases)
+    }
   }
   
   private func configureUI() {
@@ -258,7 +276,7 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCell(withIdentifier: "OptionCell")
     ?? UITableViewCell(style: .subtitle, reuseIdentifier: "OptionCell")
-    cell.textLabel?.text = options[indexPath.row]
+    cell.textLabel?.text = options[indexPath.row].title
     cell.textLabel?.font = .systemFont(ofSize: 17)
     cell.textLabel?.textColor = .blackYP
     cell.backgroundColor = .clear
@@ -267,12 +285,13 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
     cell.detailTextLabel?.font = .systemFont(ofSize: 17, weight: .regular)
     cell.detailTextLabel?.textColor = .grayYP
     
-    if options[indexPath.row] == "Категория" {
-      cell.detailTextLabel?.text = selectedCategory
-    } else if options[indexPath.row] == "Расписание" {
-      cell.detailTextLabel?.text = selectedSchedule.isEmpty
-      ? nil
-      : WeekDay.scheduleDescription(for: selectedSchedule)
+    switch options[indexPath.row] {
+      case .category:
+        cell.detailTextLabel?.text = selectedCategory
+      case .schedule:
+        cell.detailTextLabel?.text = selectedSchedule.isEmpty
+        ? nil
+        : WeekDay.scheduleDescription(for: selectedSchedule)
     }
     
     if indexPath.row == options.count - 1 {
@@ -285,20 +304,21 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
   }
   
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    if options[indexPath.row] == "Категория" {
-      selectedCategory = "Важное"
-      updateCreateButtonState()
-      self.optionsTable.reloadRows(at: [IndexPath(row: indexPath.row, section: 0)], with: .none)
-    } else if options[indexPath.row] == "Расписание" {
-      let scheduleVC = ScheduleSelectionViewController(selectedDays: selectedSchedule)
-      scheduleVC.onDone = { [weak self] days in
-        guard let self else { return }
-        self.selectedSchedule = days
+    switch options[indexPath.row] {
+      case .category:
+        selectedCategory = "Важное"
+        updateCreateButtonState()
         self.optionsTable.reloadRows(at: [IndexPath(row: indexPath.row, section: 0)], with: .none)
-        self.updateCreateButtonState()
-      }
-      let nav = UINavigationController(rootViewController: scheduleVC)
-      present(nav, animated: true)
+      case .schedule:
+        let scheduleVC = ScheduleSelectionViewController(selectedDays: selectedSchedule)
+        scheduleVC.onDone = { [weak self] days in
+          guard let self else { return }
+          self.selectedSchedule = days
+          self.optionsTable.reloadRows(at: [IndexPath(row: indexPath.row, section: 0)], with: .none)
+          self.updateCreateButtonState()
+        }
+        let nav = UINavigationController(rootViewController: scheduleVC)
+        present(nav, animated: true)
     }
   }
 }
