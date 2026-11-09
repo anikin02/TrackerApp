@@ -12,7 +12,7 @@ final class TabBarController: UITabBarController {
   override func viewDidLoad() {
     super.viewDidLoad()
     setupTabBarItems()
-    configTabBarAppearance()
+    configureTabBarAppearance()
   }
   
   private func setupTabBarItems() {
@@ -38,9 +38,18 @@ final class TabBarController: UITabBarController {
                             statisticsViewController]
   }
   
-  private func configTabBarAppearance() {
+  private func configureTabBarAppearance() {
     tabBar.tintColor = .blueYP
     tabBar.unselectedItemTintColor = .grayYP
-    //tabBar.backgroundColor = .whiteYP
+    
+    if #unavailable(iOS 26.0) {
+      tabBar.backgroundColor = .whiteYP
+    }
+    
+    let appearance = UITabBarAppearance()
+    appearance.configureWithDefaultBackground()
+    appearance.shadowColor = .grayYP
+    tabBar.standardAppearance = appearance
+    tabBar.scrollEdgeAppearance = appearance
   }
 }
