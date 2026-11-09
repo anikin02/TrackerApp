@@ -25,15 +25,15 @@ final class TrackersListViewController: UIViewController {
   
   // MARK: - Properties
   private var currentDate: Date = Date()
-  private var categories: [TrackerCategory] = Mock.categories
-  private var completedTrackers: [TrackerRecord] = Mock.completedTrackers
+  private var categories: [TrackerCategory] = TrackerDataMock.categories
+  private var completedTrackers: [TrackerRecord] = TrackerDataMock.completedTrackers
   
   private var visibleCategories: [TrackerCategory] = []
   
   override func viewDidLoad() {
     super.viewDidLoad()
     
-    configUI()
+    configureUI()
     
     visibleCategories = getDateCategories()
     
@@ -45,11 +45,11 @@ final class TrackersListViewController: UIViewController {
   }
   
   // MARK: - Private Methods
-  private func configNavigationBar() {
-    configAddTrackerButton()
-    configDateFilterPicker()
-    configTitle()
-    configSearchBar()
+  private func configureNavigationBar() {
+    configureAddTrackerButton()
+    configureDateFilterPicker()
+    configureTitle()
+    configureSearchBar()
     
     if #available(iOS 26.0, *) {
       navigationItem.leftBarButtonItem?.hidesSharedBackground = true
@@ -57,7 +57,7 @@ final class TrackersListViewController: UIViewController {
     }
   }
   
-  private func configAddTrackerButton() {
+  private func configureAddTrackerButton() {
     let icon = UIImage(resource: .navPlus).withRenderingMode(.alwaysTemplate)
     navigationItem.leftBarButtonItem = UIBarButtonItem(
       image: icon,
@@ -68,7 +68,7 @@ final class TrackersListViewController: UIViewController {
     navigationItem.leftBarButtonItem?.tintColor = .blackYP
   }
   
-  private func configDateFilterPicker() {
+  private func configureDateFilterPicker() {
     dateFilterPicker.datePickerMode = .date
     dateFilterPicker.preferredDatePickerStyle = .compact
     dateFilterPicker.date = currentDate
@@ -76,7 +76,7 @@ final class TrackersListViewController: UIViewController {
     navigationItem.rightBarButtonItem = UIBarButtonItem(customView: dateFilterPicker)
   }
   
-  private func configTitle() {
+  private func configureTitle() {
     titleLabel.translatesAutoresizingMaskIntoConstraints = false
     titleLabel.text = "Трекеры"
     titleLabel.font = UIFont.systemFont(ofSize: 34, weight: .bold)
@@ -90,7 +90,7 @@ final class TrackersListViewController: UIViewController {
     ])
   }
   
-  private func configSearchBar() {
+  private func configureSearchBar() {
     searchBar.translatesAutoresizingMaskIntoConstraints = false
     searchBar.placeholder = "Поиск"
     searchBar.searchBarStyle = .minimal
@@ -105,11 +105,11 @@ final class TrackersListViewController: UIViewController {
     ])
   }
   
-  private func configUI() {
+  private func configureUI() {
     view.backgroundColor = .whiteYP
-    configNavigationBar()
-    configCollection()
-    configEmptyStateStack()
+    configureNavigationBar()
+    configureCollection()
+    configureEmptyStateStack()
   }
   
   private func showEmptyState() {
@@ -120,7 +120,7 @@ final class TrackersListViewController: UIViewController {
     emptyStateStackView.isHidden = true
   }
   
-  private func configCollection() {
+  private func configureCollection() {
     collectionView.translatesAutoresizingMaskIntoConstraints = false
     collectionView.register(
       TrackerViewCell.self,
@@ -149,7 +149,7 @@ final class TrackersListViewController: UIViewController {
     ])
   }
   
-  private func configEmptyStateLabel() {
+  private func configureEmptyStateLabel() {
     let label = UILabel()
     label.text = "Что будем отслеживать?"
     label.textColor = .blackYP
@@ -158,7 +158,7 @@ final class TrackersListViewController: UIViewController {
     
     emptyStateStackView.addArrangedSubview(label)
   }
-  private func configEmptyStateImage() {
+  private func configureEmptyStateImage() {
     let imageView = UIImageView(image: UIImage(resource: .emptyState))
     imageView.translatesAutoresizingMaskIntoConstraints = false
     
@@ -169,14 +169,14 @@ final class TrackersListViewController: UIViewController {
       imageView.widthAnchor.constraint(equalToConstant: 80),
     ])
   }
-  private func configEmptyStateStack() {
+  private func configureEmptyStateStack() {
     emptyStateStackView.translatesAutoresizingMaskIntoConstraints = false
     emptyStateStackView.axis = .vertical
     emptyStateStackView.alignment = .center
     emptyStateStackView.spacing = 8
     
-    configEmptyStateImage()
-    configEmptyStateLabel()
+    configureEmptyStateImage()
+    configureEmptyStateLabel()
     view.addSubview(emptyStateStackView)
     
     NSLayoutConstraint.activate([
@@ -303,7 +303,7 @@ extension TrackersListViewController: UICollectionViewDataSource {
           ) as? TrackerHeaderView
             else { return UICollectionReusableView() }
     
-    header.configHeader(title: visibleCategories[indexPath.section].title)
+    header.configureHeader(title: visibleCategories[indexPath.section].title)
     return header
   }
   
@@ -317,13 +317,13 @@ extension TrackersListViewController: UICollectionViewDataSource {
     
     let model = createCellModel(tracker)
     cell.delegate = self
-    cell.configCell(with: model)
+    cell.configureCell(with: model)
     return cell
   }
   
-  private func createCellModel(_ tracker: Tracker) -> CellModel {
+  private func createCellModel(_ tracker: Tracker) -> TrackerCellModel {
     let daysCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
-    return CellModel(
+    return TrackerCellModel(
       name: tracker.name,
       emoji: tracker.emoji,
       count: daysCount,
@@ -357,7 +357,7 @@ extension TrackersListViewController: UICollectionViewDelegateFlowLayout {
   
   private func getHeaderSize(for collectionView: UICollectionView) -> CGSize {
     let view = TrackerHeaderView(frame: .zero)
-    view.configHeader(title: "Header")
+    view.configureHeader(title: "Header")
     return view.systemLayoutSizeFitting(
       CGSize(width: collectionView.bounds.width, height: UIView.layoutFittingExpandedSize.height),
       withHorizontalFittingPriority: .required,

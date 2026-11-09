@@ -24,17 +24,17 @@ final class TrackerViewCell: UICollectionViewCell {
   
   override init(frame: CGRect) {
     super.init(frame: frame)
-    configUI()
+    configureUI()
   }
   
   required init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
   
-  func configCell(with model: CellModel) {
+  func configureCell(with model: TrackerCellModel) {
     nameLabel.text = model.name
     emojiLabel.text = model.emoji
-    countLabel.text = model.stringCount
+    countLabel.text = model.daysCountText
     
     rootStack.backgroundColor = UIColor(hex: model.hexColor)
     
@@ -45,12 +45,12 @@ final class TrackerViewCell: UICollectionViewCell {
     setStateDoneButton()
   }
   
-  private func configUI() {
-    configRootStack()
-    configBottomStack()
+  private func configureUI() {
+    configureRootStack()
+    configureBottomStack()
   }
   
-  private func configRootStack() {
+  private func configureRootStack() {
     rootStack.translatesAutoresizingMaskIntoConstraints = false
     rootStack.axis = .vertical
     rootStack.spacing = 8
@@ -61,8 +61,8 @@ final class TrackerViewCell: UICollectionViewCell {
     rootStack.isLayoutMarginsRelativeArrangement = true
     rootStack.layoutMargins = .init(top: 12, left: 12, bottom: 12, right: 12)
     
-    configEmojiLabel()
-    configNameLabel()
+    configureEmojiLabel()
+    configureNameLabel()
     
     contentView.addSubview(rootStack)
     
@@ -74,7 +74,7 @@ final class TrackerViewCell: UICollectionViewCell {
     ])
   }
   
-  private func configEmojiLabel() {
+  private func configureEmojiLabel() {
     emojiLabel.font = .systemFont(ofSize: 14, weight: .medium)
     emojiLabel.textAlignment = .center
     emojiLabel.backgroundColor = UIColor.white.withAlphaComponent(0.3)
@@ -90,14 +90,14 @@ final class TrackerViewCell: UICollectionViewCell {
     ])
   }
   
-  private func configNameLabel() {
+  private func configureNameLabel() {
     nameLabel.font = .systemFont(ofSize: 12, weight: .medium)
     nameLabel.textColor = .whiteYP
     nameLabel.numberOfLines = 0
     rootStack.addArrangedSubview(nameLabel)
   }
   
-  private func configBottomStack() {
+  private func configureBottomStack() {
     bottomStack.translatesAutoresizingMaskIntoConstraints = false
     bottomStack.axis = .horizontal
     bottomStack.spacing = 8
@@ -106,8 +106,8 @@ final class TrackerViewCell: UICollectionViewCell {
     bottomStack.isLayoutMarginsRelativeArrangement = true
     bottomStack.layoutMargins = .init(top: 8, left: 12, bottom: 16, right: 12)
     
-    configCountLabel()
-    configDoneButton()
+    configureCountLabel()
+    configureDoneButton()
     
     contentView.addSubview(bottomStack)
     
@@ -119,14 +119,14 @@ final class TrackerViewCell: UICollectionViewCell {
     ])
   }
   
-  private func configCountLabel() {
+  private func configureCountLabel() {
     countLabel.font = .systemFont(ofSize: 12, weight: .medium)
     countLabel.textColor = .blackYP
     
     bottomStack.addArrangedSubview(countLabel)
   }
   
-  private func configDoneButton() {
+  private func configureDoneButton() {
     doneButton.layer.cornerRadius = 17
     doneButton.layer.masksToBounds = true
     doneButton.addTarget(self, action: #selector(didTapDoneButton), for: .touchUpInside)

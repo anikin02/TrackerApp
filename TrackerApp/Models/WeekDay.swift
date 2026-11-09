@@ -45,9 +45,13 @@ extension WeekDay {
   ]
   
   static func scheduleDescription(for days: Set<WeekDay>) -> String {
-    return days
-      .filter { days.contains($0) }
-      .map { $0.shortTitle }
-      .joined(separator: ", ")
+    if days.count == 7 {
+      return "Каждый день"
+    } else {
+      return days
+        .filter { days.contains($0) }
+        .map { $0.shortTitle }
+        .joined(separator: ", ")
+    }
   }
 }

@@ -14,7 +14,7 @@ final class SplashViewController: UIViewController {
   // MARK: - Lifecycle
   override func viewDidLoad() {
     super.viewDidLoad()
-    configUI()
+    configureUI()
   }
   
   override func viewDidAppear(_ animated: Bool) {
@@ -24,12 +24,12 @@ final class SplashViewController: UIViewController {
   }
   
   // MARK: - Private Methods
-  private func configUI() {
+  private func configureUI() {
     view.backgroundColor = .blueYP
-    configLogo()
+    configureLogo()
   }
   
-  private func configLogo() {
+  private func configureLogo() {
     logoImage.translatesAutoresizingMaskIntoConstraints = false
     logoImage.image = UIImage(resource: .logo)
     

@@ -16,23 +16,23 @@ final class TrackerTypeSelectionViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     
-    configUI()
+    configureUI()
   }
   
-  private func configUI() {
+  private func configureUI() {
     view.backgroundColor = .whiteYP
     title = "Создание трекера"
     
-    configStack()
+    configureStack()
   }
   
-  private func configStack() {
+  private func configureStack() {
     stackButtons.translatesAutoresizingMaskIntoConstraints = false
     stackButtons.axis = .vertical
     stackButtons.spacing = 16
     
-    configCreateRegularButton()
-    configCreateUnregularButton()
+    configureCreateRegularButton()
+    configureCreateUnregularButton()
     
     view.addSubview(stackButtons)
     
@@ -43,7 +43,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
     ])
   }
   
-  private func configCreateRegularButton() {
+  private func configureCreateRegularButton() {
     createRegularButton.translatesAutoresizingMaskIntoConstraints = false
     createRegularButton.setTitle("Привычка", for: .normal)
     createRegularButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
@@ -59,7 +59,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
     ])
   }
   
-  private func configCreateUnregularButton() {
+  private func configureCreateUnregularButton() {
     createUnregularButton.translatesAutoresizingMaskIntoConstraints = false
     createUnregularButton.setTitle("Нерегулярное событие", for: .normal)
     createUnregularButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)

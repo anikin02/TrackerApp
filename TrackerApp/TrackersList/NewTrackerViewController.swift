@@ -8,7 +8,7 @@
 import UIKit
 
 final class NewTrackerViewController: UIViewController {
-  // MARK: - Iternal Properties
+  // MARK: - Internal Properties
   weak var delegate: TrackersListDelegate?
   var isRegularNewTracker = true
   var titleView: String = "Новая привычка"
@@ -39,19 +39,19 @@ final class NewTrackerViewController: UIViewController {
       selectedSchedule = Set(WeekDay.allCases)
     }
     
-    configUI()
+    configureUI()
   }
   
-  private func configUI() {
+  private func configureUI() {
     view.backgroundColor = .whiteYP
     title = titleView
     
-    configTitleField()
-    configOptionsTable()
-    configStackButtons()
+    configureTitleField()
+    configureOptionsTable()
+    configureStackButtons()
   }
   
-  private func configTitleField() {
+  private func configureTitleField() {
     titleField.translatesAutoresizingMaskIntoConstraints = false
     titleField.backgroundColor = .backgroundYP
     titleField.layer.cornerRadius = 16
@@ -92,7 +92,7 @@ final class NewTrackerViewController: UIViewController {
     ])
   }
   
-  private func configOptionsTable() {
+  private func configureOptionsTable() {
     optionsTable.translatesAutoresizingMaskIntoConstraints = false
     optionsTable.dataSource = self
     optionsTable.delegate = self
@@ -113,7 +113,7 @@ final class NewTrackerViewController: UIViewController {
     ])
   }
   
-  private func configCreateButton() {
+  private func configureCreateButton() {
     createButton.setTitle("Создать", for: .normal)
     createButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
     createButton.setTitleColor(.whiteYP, for: .normal)
@@ -124,7 +124,7 @@ final class NewTrackerViewController: UIViewController {
     disableCreateButton()
   }
   
-  private func configCancelButton() {
+  private func configureCancelButton() {
     cancelButton.setTitle("Отменить", for: .normal)
     cancelButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
     cancelButton.setTitleColor(.redYP, for: .normal)
@@ -138,9 +138,9 @@ final class NewTrackerViewController: UIViewController {
     cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
   }
   
-  private func configStackButtons() {
-    configCancelButton()
-    configCreateButton()
+  private func configureStackButtons() {
+    configureCancelButton()
+    configureCreateButton()
     
     stackButtons.translatesAutoresizingMaskIntoConstraints = false
     stackButtons.axis = .horizontal

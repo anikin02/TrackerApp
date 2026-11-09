@@ -27,11 +27,11 @@ final class ScheduleSelectionViewController: UIViewController {
     super.viewDidLoad()
     view.backgroundColor = .whiteYP
     title = "Расписание"
-    configTable()
-    configDoneButton()
+    configureTable()
+    configureDoneButton()
   }
   
-  private func configTable() {
+  private func configureTable() {
     tableView.translatesAutoresizingMaskIntoConstraints = false
     tableView.dataSource = self
     tableView.register(ScheduleCell.self, forCellReuseIdentifier: ScheduleCell.identifier)
@@ -51,7 +51,7 @@ final class ScheduleSelectionViewController: UIViewController {
     ])
   }
   
-  private func configDoneButton() {
+  private func configureDoneButton() {
     doneButton.translatesAutoresizingMaskIntoConstraints = false
     doneButton.setTitle("Готово", for: .normal)
     doneButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)

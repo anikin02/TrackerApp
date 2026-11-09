@@ -13,16 +13,16 @@ final class TrackerHeaderView: UICollectionReusableView {
   
   override init(frame: CGRect) {
     super.init(frame: frame)
-    configTitle()
+    configureTitle()
   }
   
   required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
   
-  func configHeader(title: String) {
+  func configureHeader(title: String) {
     titleLabel.text = title
   }
   
-  private func configTitle() {
+  private func configureTitle() {
     titleLabel.font = .systemFont(ofSize: 19, weight: .bold)
     titleLabel.translatesAutoresizingMaskIntoConstraints = false
     addSubview(titleLabel)
