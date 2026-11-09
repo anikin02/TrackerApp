@@ -264,6 +264,8 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
     cell.backgroundColor = .clear
     cell.accessoryType = .disclosureIndicator
     cell.selectionStyle = .none
+    cell.detailTextLabel?.font = .systemFont(ofSize: 17, weight: .regular)
+    cell.detailTextLabel?.textColor = .grayYP
     
     if options[indexPath.row] == "Категория" {
       cell.detailTextLabel?.text = selectedCategory
