@@ -24,6 +24,7 @@ final class TrackersListViewController: UIViewController {
   }()
   
   // MARK: - Properties
+  private var currentDate: Date = Date()
   private var categories: [TrackerCategory] = Mock.categories
   private var completedTrackers: [TrackerRecord] = Mock.completedTrackers
   
@@ -70,6 +71,7 @@ final class TrackersListViewController: UIViewController {
   private func configDateFilterPicker() {
     dateFilterPicker.datePickerMode = .date
     dateFilterPicker.preferredDatePickerStyle = .compact
+    dateFilterPicker.date = currentDate
     dateFilterPicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
     navigationItem.rightBarButtonItem = UIBarButtonItem(customView: dateFilterPicker)
   }
@@ -91,7 +93,8 @@ final class TrackersListViewController: UIViewController {
   private func configSearchBar() {
     searchBar.translatesAutoresizingMaskIntoConstraints = false
     searchBar.placeholder = "Поиск"
-    searchBar.searchBarStyle = .minimal // убирает серый фон вокруг поля
+    searchBar.searchBarStyle = .minimal
+    searchBar.delegate = self
     
     view.addSubview(searchBar)
     
@@ -191,7 +194,7 @@ final class TrackersListViewController: UIViewController {
       var trackers: [Tracker] = []
       
       for tracker in category.trackers {
-        let numberDay = Calendar.current.component(.weekday, from: dateFilterPicker.date)
+        let numberDay = Calendar.current.component(.weekday, from: currentDate)
         if let day = WeekDay(rawValue: numberDay),
            tracker.schedule.contains(day){
           trackers.append(tracker)
@@ -204,6 +207,34 @@ final class TrackersListViewController: UIViewController {
     return result
   }
   
+  private func filterBySearch(_ categories: [TrackerCategory], query: String) -> [TrackerCategory] {
+    let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !query.isEmpty else { return categories }
+
+    return categories.compactMap { category in
+      if category.title.localizedCaseInsensitiveContains(query) {
+        return category
+      }
+
+      let trackers = category.trackers.filter {
+        $0.name.localizedCaseInsensitiveContains(query)
+      }
+      return trackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: trackers)
+    }
+  }
+  
+  private func updateVisibleCategories() {
+    let byDate = getDateCategories()
+    visibleCategories = filterBySearch(byDate, query: searchBar.text ?? "")
+    collectionView.reloadData()
+
+    if visibleCategories.isEmpty {
+      showEmptyState()
+    } else {
+      hideEmptyState()
+    }
+  }
+  
   // MARK: - Actions
   @objc private func addTrackerTapped() {
     let viewController = TrackerTypeSelectionViewController()
@@ -214,8 +245,8 @@ final class TrackersListViewController: UIViewController {
   }
   
   @objc private func dateChanged() {
-    visibleCategories = getDateCategories()
-    collectionView.reloadData()
+    currentDate = dateFilterPicker.date
+    updateVisibleCategories()
   }
 }
 
@@ -303,7 +334,7 @@ extension TrackersListViewController: UICollectionViewDataSource {
   
   private func isDone(with tracker: Tracker) -> Bool {
     completedTrackers.contains {
-      $0.trackerId == tracker.id && Calendar.current.isDate($0.date, inSameDayAs: dateFilterPicker.date)
+      $0.trackerId == tracker.id && Calendar.current.isDate($0.date, inSameDayAs: currentDate)
     }
   }
 }
@@ -343,19 +374,29 @@ extension TrackersListViewController: TrackerCellDelegate {
   func trackerCellDidTapDone(_ cell: TrackerViewCell) {
     guard let indexPath = collectionView.indexPath(for: cell) else { return }
     
-    let selectedDate = dateFilterPicker.date
     let calendar = Calendar.current
-    guard calendar.startOfDay(for: selectedDate) <= calendar.startOfDay(for: Date()) else { return }
+    guard calendar.startOfDay(for: currentDate) <= calendar.startOfDay(for: Date()) else { return }
     let tracker = visibleCategories[indexPath.section].trackers[indexPath.item]
     
     if let index = completedTrackers.firstIndex(where: {
-      $0.trackerId == tracker.id && calendar.isDate($0.date, inSameDayAs: selectedDate)
+      $0.trackerId == tracker.id && calendar.isDate($0.date, inSameDayAs: currentDate)
     }) {
       completedTrackers.remove(at: index)
     } else {
-      completedTrackers.append(TrackerRecord(trackerId: tracker.id, date: selectedDate))
+      completedTrackers.append(TrackerRecord(trackerId: tracker.id, date: currentDate))
     }
     
     collectionView.reloadItems(at: [indexPath])
+  }
+}
+
+// MARK: - UISearchBarDelegate
+extension TrackersListViewController: UISearchBarDelegate {
+  func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+    updateVisibleCategories()
+  }
+
+  func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+    searchBar.resignFirstResponder()
   }
 }
