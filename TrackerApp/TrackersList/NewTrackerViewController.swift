@@ -267,8 +267,30 @@ extension NewTrackerViewController: UITextFieldDelegate {
   }
 }
 
-// MARK: - UITableViewDataSource, UITableViewDelegate
-extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
+// MARK: - UITableViewDelegate
+extension NewTrackerViewController: UITableViewDelegate {
+  func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    switch options[indexPath.row] {
+      case .category:
+        selectedCategory = "Важное"
+        updateCreateButtonState()
+        self.optionsTable.reloadRows(at: [IndexPath(row: indexPath.row, section: 0)], with: .none)
+      case .schedule:
+        let scheduleVC = ScheduleSelectionViewController(selectedDays: selectedSchedule)
+        scheduleVC.onDone = { [weak self] days in
+          guard let self else { return }
+          self.selectedSchedule = days
+          self.optionsTable.reloadRows(at: [IndexPath(row: indexPath.row, section: 0)], with: .none)
+          self.updateCreateButtonState()
+        }
+        let nav = UINavigationController(rootViewController: scheduleVC)
+        present(nav, animated: true)
+    }
+  }
+}
+
+// MARK: - UITableViewDataSource
+extension NewTrackerViewController: UITableViewDataSource {
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     options.count
   }
@@ -301,24 +323,5 @@ extension NewTrackerViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     return cell
-  }
-  
-  func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    switch options[indexPath.row] {
-      case .category:
-        selectedCategory = "Важное"
-        updateCreateButtonState()
-        self.optionsTable.reloadRows(at: [IndexPath(row: indexPath.row, section: 0)], with: .none)
-      case .schedule:
-        let scheduleVC = ScheduleSelectionViewController(selectedDays: selectedSchedule)
-        scheduleVC.onDone = { [weak self] days in
-          guard let self else { return }
-          self.selectedSchedule = days
-          self.optionsTable.reloadRows(at: [IndexPath(row: indexPath.row, section: 0)], with: .none)
-          self.updateCreateButtonState()
-        }
-        let nav = UINavigationController(rootViewController: scheduleVC)
-        present(nav, animated: true)
-    }
   }
 }
