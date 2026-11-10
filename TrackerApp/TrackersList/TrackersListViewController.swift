@@ -16,7 +16,7 @@ final class TrackersListViewController: UIViewController {
   private let dateFilterPicker: UIDatePicker = .init()
   private let titleLabel: UILabel = .init()
   private let searchBar: UISearchBar = .init()
-  private let emptyStateStackView = UIStackView()
+  private let emptyStateView: EmptyStateView = .init()
   private let collectionView: UICollectionView = {
     let layout = UICollectionViewFlowLayout()
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -109,15 +109,27 @@ final class TrackersListViewController: UIViewController {
     view.backgroundColor = .whiteYP
     configureNavigationBar()
     configureCollection()
-    configureEmptyStateStack()
+    configureEmptyView()
+  }
+  
+  private func configureEmptyView() {
+    emptyStateView.translatesAutoresizingMaskIntoConstraints = false
+    emptyStateView.config(with: "Что будем отслеживать?")
+    view.addSubview(emptyStateView)
+    NSLayoutConstraint.activate([
+      emptyStateView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+      emptyStateView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+      emptyStateView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      emptyStateView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+    ])
   }
   
   private func showEmptyState() {
-    emptyStateStackView.isHidden = false
+    emptyStateView.isHidden = false
   }
   
   private func hideEmptyState() {
-    emptyStateStackView.isHidden = true
+    emptyStateView.isHidden = true
   }
   
   private func configureCollection() {
@@ -149,43 +161,6 @@ final class TrackersListViewController: UIViewController {
     ])
   }
   
-  private func configureEmptyStateLabel() {
-    let label = UILabel()
-    label.text = "Что будем отслеживать?"
-    label.textColor = .blackYP
-    label.textAlignment = .center
-    label.font = .systemFont(ofSize: 12, weight: .medium)
-    
-    emptyStateStackView.addArrangedSubview(label)
-  }
-  private func configureEmptyStateImage() {
-    let imageView = UIImageView(image: UIImage(resource: .emptyState))
-    imageView.translatesAutoresizingMaskIntoConstraints = false
-    
-    emptyStateStackView.addArrangedSubview(imageView)
-    
-    NSLayoutConstraint.activate([
-      imageView.heightAnchor.constraint(equalToConstant: 80),
-      imageView.widthAnchor.constraint(equalToConstant: 80),
-    ])
-  }
-  private func configureEmptyStateStack() {
-    emptyStateStackView.translatesAutoresizingMaskIntoConstraints = false
-    emptyStateStackView.axis = .vertical
-    emptyStateStackView.alignment = .center
-    emptyStateStackView.spacing = 8
-    
-    configureEmptyStateImage()
-    configureEmptyStateLabel()
-    view.addSubview(emptyStateStackView)
-    
-    NSLayoutConstraint.activate([
-      emptyStateStackView.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor),
-      emptyStateStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-      emptyStateStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-    ])
-  }
-  
   private func getDateCategories() -> [TrackerCategory] {
     var result: [TrackerCategory] = []
     
@@ -210,12 +185,12 @@ final class TrackersListViewController: UIViewController {
   private func filterBySearch(_ categories: [TrackerCategory], query: String) -> [TrackerCategory] {
     let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !query.isEmpty else { return categories }
-
+    
     return categories.compactMap { category in
       if category.title.localizedCaseInsensitiveContains(query) {
         return category
       }
-
+      
       let trackers = category.trackers.filter {
         $0.name.localizedCaseInsensitiveContains(query)
       }
@@ -227,7 +202,7 @@ final class TrackersListViewController: UIViewController {
     let byDate = getDateCategories()
     visibleCategories = filterBySearch(byDate, query: searchBar.text ?? "")
     collectionView.reloadData()
-
+    
     if visibleCategories.isEmpty {
       showEmptyState()
     } else {
@@ -395,7 +370,7 @@ extension TrackersListViewController: UISearchBarDelegate {
   func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
     updateVisibleCategories()
   }
-
+  
   func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
     searchBar.resignFirstResponder()
   }
