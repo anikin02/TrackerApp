@@ -29,6 +29,7 @@ final class EmptyStateView: UIView {
   private func configureEmptyStateLabel() {
     label.textColor = .blackYP
     label.textAlignment = .center
+    label.numberOfLines = 0
     label.font = .systemFont(ofSize: 12, weight: .medium)
     
     emptyStateStackView.addArrangedSubview(label)
