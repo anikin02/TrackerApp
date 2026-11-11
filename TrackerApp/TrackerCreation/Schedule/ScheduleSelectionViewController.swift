@@ -91,9 +91,11 @@ extension ScheduleSelectionViewController: UITableViewDataSource {
       if isOn { self?.selectedDays.insert(day) } else { self?.selectedDays.remove(day) }
     }
     
-    cell.separatorInset = indexPath.row == days.count - 1
-    ? UIEdgeInsets(top: 0, left: 16, bottom: 0, right: .greatestFiniteMagnitude)
-    : UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+    if indexPath.row == days.count - 1 {
+      cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: .greatestFiniteMagnitude)
+    } else {
+      cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+    }
     return cell
   }
 }

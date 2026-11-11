@@ -8,6 +8,7 @@
 import UIKit
 
 protocol TrackersListDelegate: AnyObject {
+  var categories: [TrackerCategory] { get }
   func addNewTracker(tracker: Tracker, category: String)
 }
 
@@ -24,8 +25,8 @@ final class TrackersListViewController: UIViewController {
   }()
   
   // MARK: - Properties
+  var categories: [TrackerCategory] = TrackerDataMock.categories
   private var currentDate: Date = Date()
-  private var categories: [TrackerCategory] = TrackerDataMock.categories
   private var completedTrackers: [TrackerRecord] = TrackerDataMock.completedTrackers
   
   private var visibleCategories: [TrackerCategory] = []
