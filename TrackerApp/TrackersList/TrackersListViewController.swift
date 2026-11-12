@@ -141,9 +141,9 @@ final class TrackersListViewController: UIViewController {
     )
     
     collectionView.register(
-      TrackerHeaderView.self,
+      HeaderView.self,
       forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-      withReuseIdentifier: TrackerHeaderView.reuseIdentifier
+      withReuseIdentifier: HeaderView.reuseIdentifier
     )
     
     collectionView.backgroundColor = .whiteYP
@@ -274,9 +274,9 @@ extension TrackersListViewController: UICollectionViewDataSource {
     guard kind == UICollectionView.elementKindSectionHeader,
           let header = collectionView.dequeueReusableSupplementaryView(
             ofKind: kind,
-            withReuseIdentifier: TrackerHeaderView.reuseIdentifier,
+            withReuseIdentifier: HeaderView.reuseIdentifier,
             for: indexPath
-          ) as? TrackerHeaderView
+          ) as? HeaderView
             else { return UICollectionReusableView() }
     
     header.configureHeader(title: visibleCategories[indexPath.section].title)
@@ -332,7 +332,7 @@ extension TrackersListViewController: UICollectionViewDelegateFlowLayout {
   }
   
   private func getHeaderSize(for collectionView: UICollectionView) -> CGSize {
-    let view = TrackerHeaderView(frame: .zero)
+    let view = HeaderView(frame: .zero)
     view.configureHeader(title: "Header")
     return view.systemLayoutSizeFitting(
       CGSize(width: collectionView.bounds.width, height: UIView.layoutFittingExpandedSize.height),
