@@ -268,7 +268,7 @@ final class NewTrackerViewController: UIViewController {
     stackButtons.addArrangedSubview(createButton)
     
     NSLayoutConstraint.activate([
-      stackButtons.topAnchor.constraint(equalTo: emojiColorColletion.bottomAnchor, constant: 16),
+      stackButtons.topAnchor.constraint(equalTo: emojiColorColletion.bottomAnchor, constant: 40),
       stackButtons.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
       stackButtons.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
       stackButtons.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
