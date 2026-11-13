@@ -23,7 +23,7 @@ final class TrackersListViewController: UIViewController {
     return collectionView
   }()
   
-  // MARK: - Properties
+  // MARK: - Private Properties
   private var categories: [TrackerCategory] = []
   private var currentDate: Date = Date()
   private var completedTrackers: [TrackerRecord] = []
@@ -368,6 +368,7 @@ extension TrackersListViewController: UISearchBarDelegate {
   }
 }
 
+// MARK: - TrackerStoreDelegate
 extension TrackersListViewController: TrackerStoreDelegate {
   func trackerStoreDidUpdate() {
     let oldVisible = visibleCategories
@@ -404,12 +405,14 @@ extension TrackersListViewController: TrackerStoreDelegate {
   }
 }
 
+// MARK: - TrackerRecordStoreDelegate
 extension TrackersListViewController: TrackerRecordStoreDelegate {
   func trackerRecordStoreDidUpdate() {
     // TODO: Пока не уверен, что нужно, так как не хочется перерисовывать всю коллекцию
   }
 }
 
+// MARK: - TrackerCategoryStoreDelegate
 extension TrackersListViewController: TrackerCategoryStoreDelegate {
   func trackerCategoryStoreDidUpdate() {
     // TODO: Скорее всегго понадоиться при удалении категории
