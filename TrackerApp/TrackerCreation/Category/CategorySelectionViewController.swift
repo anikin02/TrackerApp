@@ -13,7 +13,7 @@ final class CategorySelectionViewController: UIViewController {
   private let tableView: UITableView = .init()
   private let emptyStateView: EmptyStateView = .init()
   private let createCategoryButton: UIButton = .init()
-  private var selectedCategoryIndexPath: IndexPath?
+  private var selectedTitle: String?
   private var tableHeightConstraint: NSLayoutConstraint?
   private let trackerCategoryStore: TrackerCategoryStore = .init()
   
@@ -116,6 +116,16 @@ final class CategorySelectionViewController: UIViewController {
     categories.isEmpty ? showEmptyStateView() : hideEmptyStateView()
   }
   
+  private func applySeparator(to cell: UITableViewCell, at indexPath: IndexPath) {
+    let isLast = indexPath.row == categories.count - 1
+    cell.separatorInset = UIEdgeInsets(
+      top: 0,
+      left: 16,
+      bottom: 0,
+      right: isLast ? .greatestFiniteMagnitude : 16
+    )
+  }
+  
   private func addNewCategory(title: String) throws {
     try trackerCategoryStore.addNewCategory(with: TrackerCategory(title: title, trackers: []))
   }
@@ -143,19 +153,16 @@ extension CategorySelectionViewController: UITableViewDataSource {
     let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell")
     ?? UITableViewCell(style: .default, reuseIdentifier: "CategoryCell")
     
-    cell.textLabel?.text = categories[indexPath.row].title
+    let title = categories[indexPath.row].title
+    cell.textLabel?.text = title
     cell.textLabel?.font = .systemFont(ofSize: 17)
     cell.textLabel?.textColor = .blackYP
     cell.backgroundColor = .clear
     cell.selectionStyle = .none
-    cell.accessoryType = (indexPath == selectedCategoryIndexPath) ? .checkmark : .none
+    cell.accessoryType = (title == selectedTitle) ? .checkmark : .none
     cell.tintColor = .blueYP
     
-    if indexPath.row == categories.count - 1 {
-      cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: .greatestFiniteMagnitude)
-    } else {
-      cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-    }
+    applySeparator(to: cell, at: indexPath)
     
     return cell
   }
@@ -163,13 +170,14 @@ extension CategorySelectionViewController: UITableViewDataSource {
 
 extension CategorySelectionViewController: UITableViewDelegate {
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    let oldIndexPath = selectedCategoryIndexPath
-    guard oldIndexPath != indexPath else { return }
-    selectedCategoryIndexPath = indexPath
-    tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-    categorySelected?(categories[indexPath.row].title)
-    guard let oldIndexPath else { return }
-    tableView.cellForRow(at: oldIndexPath)?.accessoryType = .none
+    let title = categories[indexPath.row].title
+    guard title != selectedTitle else { return }
+    let oldRow = categories.firstIndex { $0.title == selectedTitle }
+    selectedTitle = title
+    var rows = [indexPath]
+    if let oldRow { rows.append(IndexPath(row: oldRow, section: 0)) }
+    tableView.reloadRows(at: rows, with: .none)
+    categorySelected?(title)
   }
 }
 
@@ -190,21 +198,23 @@ extension CategorySelectionViewController: TrackerCategoryStoreDelegate {
       updateEmptyState()
       return
     }
-    
+
     categories = newCategories
-    
-    var rowsToReload: [IndexPath] = []
-    if let oldLast = oldTitles.last,
-       let newIndex = newTitles.firstIndex(of: oldLast),
-       newIndex != newTitles.count - 1 {
-      rowsToReload.append(IndexPath(row: newIndex, section: 0))
-    }
-    
+
+    let oldLastTitle = oldTitles.last
+
     tableView.performBatchUpdates {
       tableView.insertRows(at: inserted, with: .automatic)
-      tableView.reloadRows(at: rowsToReload, with: .none)
+    } completion: { [weak self] _ in
+      guard let self,
+            let oldLastTitle,
+            let row = self.categories.firstIndex(where: { $0.title == oldLastTitle }),
+            row != self.categories.count - 1
+      else { return }
+
+      self.tableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .none)
     }
-    
+
     updateTableHeight()
     UIView.animate(withDuration: 0.25) {
       self.view.layoutIfNeeded()
