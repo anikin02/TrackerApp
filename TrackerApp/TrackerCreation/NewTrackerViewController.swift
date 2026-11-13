@@ -399,7 +399,6 @@ extension NewTrackerViewController: UITableViewDelegate {
     switch options[indexPath.row] {
       case .category:
         let categoryVC = CategorySelectionViewController()
-        categoryVC.configureView(with: delegate?.categories ?? [])
         categoryVC.categorySelected = { [weak self] category in
           guard let self else { return }
           self.selectedCategory = category

@@ -15,21 +15,21 @@ final class CategorySelectionViewController: UIViewController {
   private let createCategoryButton: UIButton = .init()
   private var selectedCategoryIndexPath: IndexPath?
   private var tableHeightConstraint: NSLayoutConstraint?
+  private let trackerCategoryStore: TrackerCategoryStore = .init()
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    
+    trackerCategoryStore.delegate = self
     configureUI()
-    
-    if categories.isEmpty {
-      showEmptyStateView()
-    } else {
-      hideEmptyStateView()
-    }
+    reloadCategories()
+    updateEmptyState()
   }
   
-  func configureView(with categories: [TrackerCategory]) {
-    self.categories = categories
+  private func reloadCategories() {
+    categories = trackerCategoryStore.categories
+    tableView.reloadData()
+    updateTableHeight()
+    view.layoutIfNeeded()
   }
   
   private func configureUI() {
@@ -112,31 +112,22 @@ final class CategorySelectionViewController: UIViewController {
     emptyStateView.isHidden = false
   }
   
-  private func addNewCategory(title: String) {
-    categories.append(TrackerCategory(title: title, trackers: []))
-    
-    let newIndexPath = IndexPath(row: categories.count - 1, section: 0)
-    var rowsToReload: [IndexPath] = []
-    if newIndexPath.row > 0 {
-      rowsToReload.append(IndexPath(row: newIndexPath.row - 1, section: 0))
-    }
-    
-    tableView.performBatchUpdates {
-      tableView.insertRows(at: [newIndexPath], with: .automatic)
-      tableView.reloadRows(at: rowsToReload, with: .none)
-    }
-    
-    updateTableHeight()
-    UIView.animate(withDuration: 0.25) {
-      self.view.layoutIfNeeded()
-    }
+  private func updateEmptyState() {
+    categories.isEmpty ? showEmptyStateView() : hideEmptyStateView()
+  }
+  
+  private func addNewCategory(title: String) throws {
+    try trackerCategoryStore.addNewCategory(with: TrackerCategory(title: title, trackers: []))
   }
   
   @objc private func createCategoryButtonTapped() {
     let categoryVC = CategoryCreationViewController()
     categoryVC.isDone = { [weak self] title in
-      guard let self else { return }
-      self.addNewCategory(title: title)
+      do {
+        try self?.addNewCategory(title: title)
+      } catch {
+        assertionFailure("Не удалось сохранить категорию: \(error)")
+      }
     }
     let nav = UINavigationController(rootViewController: categoryVC)
     present(nav, animated: true)
@@ -179,5 +170,45 @@ extension CategorySelectionViewController: UITableViewDelegate {
     categorySelected?(categories[indexPath.row].title)
     guard let oldIndexPath else { return }
     tableView.cellForRow(at: oldIndexPath)?.accessoryType = .none
+  }
+}
+
+extension CategorySelectionViewController: TrackerCategoryStoreDelegate {
+  func trackerCategoryStoreDidUpdate() {
+    let oldTitles = categories.map(\.title)
+    let newCategories = trackerCategoryStore.categories
+    let newTitles = newCategories.map(\.title)
+    
+    let inserted = newTitles.indices
+      .filter { !oldTitles.contains(newTitles[$0]) }
+      .map { IndexPath(row: $0, section: 0) }
+    
+    guard newTitles.count == oldTitles.count + inserted.count else {
+      categories = newCategories
+      tableView.reloadData()
+      updateTableHeight()
+      updateEmptyState()
+      return
+    }
+    
+    categories = newCategories
+    
+    var rowsToReload: [IndexPath] = []
+    if let oldLast = oldTitles.last,
+       let newIndex = newTitles.firstIndex(of: oldLast),
+       newIndex != newTitles.count - 1 {
+      rowsToReload.append(IndexPath(row: newIndex, section: 0))
+    }
+    
+    tableView.performBatchUpdates {
+      tableView.insertRows(at: inserted, with: .automatic)
+      tableView.reloadRows(at: rowsToReload, with: .none)
+    }
+    
+    updateTableHeight()
+    UIView.animate(withDuration: 0.25) {
+      self.view.layoutIfNeeded()
+    }
+    updateEmptyState()
   }
 }

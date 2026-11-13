@@ -10,7 +10,6 @@ import UIKit
 final class CategoryCreationViewController: UIViewController {
   var isDone: ((String) -> Void)?
   private let titleField: UITextField = .init()
-  private let errorLabel: UILabel = .init()
   private let createButton: UIButton = .init()
   
   override func viewDidLoad() {
