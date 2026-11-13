@@ -1,0 +1,224 @@
+//
+//  CategorySelectionViewController.swift
+//  TrackerApp
+//
+//  Created by Данил on 11/11/2026.
+//
+
+import UIKit
+
+final class CategorySelectionViewController: UIViewController {
+  var categorySelected: ((String) -> Void)?
+  private var categories: [TrackerCategory] = []
+  private let tableView: UITableView = .init()
+  private let emptyStateView: EmptyStateView = .init()
+  private let createCategoryButton: UIButton = .init()
+  private var selectedTitle: String?
+  private var tableHeightConstraint: NSLayoutConstraint?
+  private let trackerCategoryStore: TrackerCategoryStore = .init()
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    trackerCategoryStore.delegate = self
+    configureUI()
+    reloadCategories()
+    updateEmptyState()
+  }
+  
+  private func reloadCategories() {
+    categories = trackerCategoryStore.categories
+    tableView.reloadData()
+    updateTableHeight()
+    view.layoutIfNeeded()
+  }
+  
+  private func configureUI() {
+    view.backgroundColor = .whiteYP
+    title = "Категория"
+    configureCreateCategoryButton()
+    configureTableView()
+    configureEmptyStateView()
+    updateTableHeight()
+  }
+  
+  private func configureTableView() {
+    tableView.translatesAutoresizingMaskIntoConstraints = false
+    tableView.dataSource = self
+    tableView.delegate = self
+    
+    tableView.backgroundColor = .backgroundYP
+    tableView.layer.cornerRadius = 16
+    tableView.layer.masksToBounds = true
+    tableView.rowHeight = 75
+    tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+    let heightConstraint = tableView.heightAnchor.constraint(equalToConstant: 0)
+    heightConstraint.priority = .defaultHigh
+    tableHeightConstraint = heightConstraint
+    
+    view.addSubview(tableView)
+    
+    NSLayoutConstraint.activate([
+      tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+      tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+      tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
+      tableView.bottomAnchor.constraint(lessThanOrEqualTo: createCategoryButton.topAnchor, constant: -24),
+      heightConstraint,
+    ])
+  }
+  
+  func updateTableHeight() {
+    tableHeightConstraint?.constant = CGFloat(categories.count) * tableView.rowHeight
+  }
+  
+  private func configureEmptyStateView() {
+    emptyStateView.translatesAutoresizingMaskIntoConstraints = false
+    emptyStateView.config(with: "Привычки и события можно\nобъединить по смыслу")
+    
+    view.addSubview(emptyStateView)
+    
+    NSLayoutConstraint.activate([
+      emptyStateView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+      emptyStateView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+      emptyStateView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+      emptyStateView.bottomAnchor.constraint(equalTo: createCategoryButton.topAnchor)
+    ])
+  }
+  
+  private func configureCreateCategoryButton() {
+    createCategoryButton.translatesAutoresizingMaskIntoConstraints = false
+    createCategoryButton.setTitle("Добавить категорию", for: .normal)
+    createCategoryButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+    createCategoryButton.setTitleColor(.whiteYP, for: .normal)
+    createCategoryButton.backgroundColor = .blackYP
+    createCategoryButton.layer.cornerRadius = 16
+    createCategoryButton.layer.masksToBounds = true
+    createCategoryButton.addTarget(self, action: #selector(createCategoryButtonTapped), for: .touchUpInside)
+    
+    view.addSubview(createCategoryButton)
+    
+    NSLayoutConstraint.activate([
+      createCategoryButton.heightAnchor.constraint(equalToConstant: 60),
+      createCategoryButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+      createCategoryButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+      createCategoryButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+    ])
+  }
+  
+  private func hideEmptyStateView() {
+    emptyStateView.isHidden = true
+  }
+  
+  private func showEmptyStateView() {
+    emptyStateView.isHidden = false
+  }
+  
+  private func updateEmptyState() {
+    categories.isEmpty ? showEmptyStateView() : hideEmptyStateView()
+  }
+  
+  private func applySeparator(to cell: UITableViewCell, at indexPath: IndexPath) {
+    let isLast = indexPath.row == categories.count - 1
+    cell.separatorInset = UIEdgeInsets(
+      top: 0,
+      left: 16,
+      bottom: 0,
+      right: isLast ? .greatestFiniteMagnitude : 16
+    )
+  }
+  
+  private func addNewCategory(title: String) throws {
+    try trackerCategoryStore.addNewCategory(with: TrackerCategory(title: title, trackers: []))
+  }
+  
+  @objc private func createCategoryButtonTapped() {
+    let categoryVC = CategoryCreationViewController()
+    categoryVC.isDone = { [weak self] title in
+      do {
+        try self?.addNewCategory(title: title)
+      } catch {
+        assertionFailure("Не удалось сохранить категорию: \(error)")
+      }
+    }
+    let nav = UINavigationController(rootViewController: categoryVC)
+    present(nav, animated: true)
+  }
+}
+
+extension CategorySelectionViewController: UITableViewDataSource {
+  func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    categories.count
+  }
+  
+  func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell")
+    ?? UITableViewCell(style: .default, reuseIdentifier: "CategoryCell")
+    
+    let title = categories[indexPath.row].title
+    cell.textLabel?.text = title
+    cell.textLabel?.font = .systemFont(ofSize: 17)
+    cell.textLabel?.textColor = .blackYP
+    cell.backgroundColor = .clear
+    cell.selectionStyle = .none
+    cell.accessoryType = (title == selectedTitle) ? .checkmark : .none
+    cell.tintColor = .blueYP
+    
+    applySeparator(to: cell, at: indexPath)
+    
+    return cell
+  }
+}
+
+extension CategorySelectionViewController: UITableViewDelegate {
+  func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    let title = categories[indexPath.row].title
+    guard title != selectedTitle else { return }
+    let oldRow = categories.firstIndex { $0.title == selectedTitle }
+    selectedTitle = title
+    var rows = [indexPath]
+    if let oldRow { rows.append(IndexPath(row: oldRow, section: 0)) }
+    tableView.reloadRows(at: rows, with: .none)
+    categorySelected?(title)
+  }
+}
+
+extension CategorySelectionViewController: TrackerCategoryStoreDelegate {
+  func trackerCategoryStoreDidUpdate() {
+    let oldTitles = categories.map(\.title)
+    let newCategories = trackerCategoryStore.categories
+    let newTitles = newCategories.map(\.title)
+    
+    let inserted = newTitles.indices
+      .filter { !oldTitles.contains(newTitles[$0]) }
+      .map { IndexPath(row: $0, section: 0) }
+    
+    guard newTitles.count == oldTitles.count + inserted.count else {
+      categories = newCategories
+      tableView.reloadData()
+      updateTableHeight()
+      updateEmptyState()
+      return
+    }
+
+    categories = newCategories
+
+    let oldLastTitle = oldTitles.last
+
+    tableView.performBatchUpdates {
+      tableView.insertRows(at: inserted, with: .automatic)
+    } completion: { [weak self] _ in
+      guard let self,
+            let oldLastTitle,
+            let row = self.categories.firstIndex(where: { $0.title == oldLastTitle }),
+            row != self.categories.count - 1
+      else { return }
+
+      self.tableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .none)
+    }
+
+    updateTableHeight()
+    UIView.animate(withDuration: 0.25) {
+      self.view.layoutIfNeeded()
+    }
+    updateEmptyState()
+  }
+}
