@@ -76,20 +76,18 @@ final class TrackerTypeSelectionViewController: UIViewController {
   }
   
   @objc private func createRegularButtonTapped() {
-    let viewController = NewTrackerViewController()
-    viewController.delegate = delegate
-    viewController.isRegularNewTracker = true
-    viewController.titleView = "Новая привычка"
-    let navController = UINavigationController(rootViewController: viewController)
-    navController.modalPresentationStyle = .pageSheet
-    present(navController, animated: true)
+    showCreationView(title: "Новая привычка", isRegular: true)
   }
   
   @objc private func createUnregularButtonTapped() {
+    showCreationView(title: "Новое нерегулярное событие", isRegular: false)
+  }
+  
+  private func showCreationView(title: String, isRegular: Bool) {
     let viewController = NewTrackerViewController()
     viewController.delegate = delegate
-    viewController.isRegularNewTracker = false
-    viewController.titleView = "Новое нерегулярное событие"
+    viewController.isRegularNewTracker = isRegular
+    viewController.titleView = title
     let navController = UINavigationController(rootViewController: viewController)
     navController.modalPresentationStyle = .pageSheet
     present(navController, animated: true)

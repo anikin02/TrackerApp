@@ -1,5 +1,5 @@
 //
-//  TrackerHeaderView.swift
+//  HeaderView.swift
 //  TrackerApp
 //
 //  Created by Данил on 07/11/2026.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class TrackerHeaderView: UICollectionReusableView {
+final class HeaderView: UICollectionReusableView {
   static let reuseIdentifier = "TrackerHeaderView"
   private let titleLabel: UILabel = .init()
   
