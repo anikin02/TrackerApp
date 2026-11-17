@@ -9,27 +9,52 @@ import UIKit
 
 final class CategorySelectionViewController: UIViewController {
   var categorySelected: ((String) -> Void)?
-  private var categories: [TrackerCategory] = []
   private let tableView: UITableView = .init()
   private let emptyStateView: EmptyStateView = .init()
   private let createCategoryButton: UIButton = .init()
-  private var selectedTitle: String?
   private var tableHeightConstraint: NSLayoutConstraint?
-  private let trackerCategoryStore: TrackerCategoryStore = .init()
+  private let viewModel: CategorySelectionViewModel = .init()
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    trackerCategoryStore.delegate = self
     configureUI()
-    reloadCategories()
-    updateEmptyState()
+    bindViewModel()
+    viewModel.viewDidLoad()
   }
   
-  private func reloadCategories() {
-    categories = trackerCategoryStore.categories
-    tableView.reloadData()
-    updateTableHeight()
-    view.layoutIfNeeded()
+  private func bindViewModel() {
+    viewModel.onTableUpdate = { [weak self] update in
+      self?.apply(update)
+    }
+    viewModel.onEmptyStateChange = { [weak self] isEmpty in
+      isEmpty ? self?.showEmptyStateView() : self?.hideEmptyStateView()
+    }
+    viewModel.onCategorySelected = { [weak self] title in
+      self?.categorySelected?(title)
+    }
+  }
+  
+  private func apply(_ update: CategorySelectionViewModel.TableUpdate) {
+    switch update {
+    case .reload:
+        tableView.reloadData()
+        updateTableHeight()
+    case let .insert(inserted, reloadRows):
+      tableView.performBatchUpdates {
+        tableView.insertRows(at: inserted.map(indexPath), with: .automatic)
+      } completion: { [weak self] _ in
+        guard let self, !reloadRows.isEmpty else { return }
+        self.tableView.reloadRows(at: reloadRows.map(self.indexPath), with: .none)
+      }
+      updateTableHeight()
+      UIView.animate(withDuration: 0.25) { self.view.layoutIfNeeded() }
+    case let .reloadRows(rows):
+      tableView.reloadRows(at: rows.map(indexPath), with: .none)
+    }
+  }
+
+  private func indexPath(for index: Int) -> IndexPath {
+    IndexPath(row: index, section: 0)
   }
   
   private func configureUI() {
@@ -43,6 +68,9 @@ final class CategorySelectionViewController: UIViewController {
   
   private func configureTableView() {
     tableView.translatesAutoresizingMaskIntoConstraints = false
+    
+    tableView.register(CategoryTableViewCell.self, forCellReuseIdentifier: CategoryTableViewCell.reuseIdentifier)
+    
     tableView.dataSource = self
     tableView.delegate = self
     
@@ -66,8 +94,8 @@ final class CategorySelectionViewController: UIViewController {
     ])
   }
   
-  func updateTableHeight() {
-    tableHeightConstraint?.constant = CGFloat(categories.count) * tableView.rowHeight
+  private func updateTableHeight() {
+    tableHeightConstraint?.constant = CGFloat(viewModel.numberOfRows) * tableView.rowHeight
   }
   
   private func configureEmptyStateView() {
@@ -112,12 +140,8 @@ final class CategorySelectionViewController: UIViewController {
     emptyStateView.isHidden = false
   }
   
-  private func updateEmptyState() {
-    categories.isEmpty ? showEmptyStateView() : hideEmptyStateView()
-  }
-  
   private func applySeparator(to cell: UITableViewCell, at indexPath: IndexPath) {
-    let isLast = indexPath.row == categories.count - 1
+    let isLast = viewModel.isLastRow(at: indexPath.row)
     cell.separatorInset = UIEdgeInsets(
       top: 0,
       left: 16,
@@ -126,18 +150,10 @@ final class CategorySelectionViewController: UIViewController {
     )
   }
   
-  private func addNewCategory(title: String) throws {
-    try trackerCategoryStore.addNewCategory(with: TrackerCategory(title: title, trackers: []))
-  }
-  
   @objc private func createCategoryButtonTapped() {
     let categoryVC = CategoryCreationViewController()
     categoryVC.isDone = { [weak self] title in
-      do {
-        try self?.addNewCategory(title: title)
-      } catch {
-        assertionFailure("Не удалось сохранить категорию: \(error)")
-      }
+      self?.viewModel.addCategory(title: title)
     }
     let nav = UINavigationController(rootViewController: categoryVC)
     present(nav, animated: true)
@@ -146,22 +162,17 @@ final class CategorySelectionViewController: UIViewController {
 
 extension CategorySelectionViewController: UITableViewDataSource {
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    categories.count
+    viewModel.numberOfRows
   }
   
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell")
-    ?? UITableViewCell(style: .default, reuseIdentifier: "CategoryCell")
+    guard let cell = tableView.dequeueReusableCell(
+      withIdentifier: CategoryTableViewCell.reuseIdentifier,
+      for: indexPath) as? CategoryTableViewCell else {
+      return UITableViewCell()
+    }
     
-    let title = categories[indexPath.row].title
-    cell.textLabel?.text = title
-    cell.textLabel?.font = .systemFont(ofSize: 17)
-    cell.textLabel?.textColor = .blackYP
-    cell.backgroundColor = .clear
-    cell.selectionStyle = .none
-    cell.accessoryType = (title == selectedTitle) ? .checkmark : .none
-    cell.tintColor = .blueYP
-    
+    cell.configureCell(with: viewModel.cellViewModel(at: indexPath.row))
     applySeparator(to: cell, at: indexPath)
     
     return cell
@@ -170,55 +181,6 @@ extension CategorySelectionViewController: UITableViewDataSource {
 
 extension CategorySelectionViewController: UITableViewDelegate {
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    let title = categories[indexPath.row].title
-    guard title != selectedTitle else { return }
-    let oldRow = categories.firstIndex { $0.title == selectedTitle }
-    selectedTitle = title
-    var rows = [indexPath]
-    if let oldRow { rows.append(IndexPath(row: oldRow, section: 0)) }
-    tableView.reloadRows(at: rows, with: .none)
-    categorySelected?(title)
-  }
-}
-
-extension CategorySelectionViewController: TrackerCategoryStoreDelegate {
-  func trackerCategoryStoreDidUpdate() {
-    let oldTitles = categories.map(\.title)
-    let newCategories = trackerCategoryStore.categories
-    let newTitles = newCategories.map(\.title)
-    
-    let inserted = newTitles.indices
-      .filter { !oldTitles.contains(newTitles[$0]) }
-      .map { IndexPath(row: $0, section: 0) }
-    
-    guard newTitles.count == oldTitles.count + inserted.count else {
-      categories = newCategories
-      tableView.reloadData()
-      updateTableHeight()
-      updateEmptyState()
-      return
-    }
-
-    categories = newCategories
-
-    let oldLastTitle = oldTitles.last
-
-    tableView.performBatchUpdates {
-      tableView.insertRows(at: inserted, with: .automatic)
-    } completion: { [weak self] _ in
-      guard let self,
-            let oldLastTitle,
-            let row = self.categories.firstIndex(where: { $0.title == oldLastTitle }),
-            row != self.categories.count - 1
-      else { return }
-
-      self.tableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .none)
-    }
-
-    updateTableHeight()
-    UIView.animate(withDuration: 0.25) {
-      self.view.layoutIfNeeded()
-    }
-    updateEmptyState()
+    viewModel.didSelectRow(at: indexPath.row)
   }
 }
