@@ -20,7 +20,12 @@ final class SplashViewController: UIViewController {
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
     
-    switchToTabBarController()
+    if FirstLaunchService.shared.hasLaunchedBefore {
+      switchToViewController(viewController: TabBarController())
+    } else {
+      switchToViewController(viewController: OnboardingViewController())
+    }
+    
   }
   
   // MARK: - Private Methods
@@ -43,15 +48,13 @@ final class SplashViewController: UIViewController {
     ])
   }
   
-  private func switchToTabBarController() {
+  private func switchToViewController(viewController: UIViewController) {
     let window = UIApplication.shared.connectedScenes
       .compactMap { $0 as? UIWindowScene }
       .flatMap { $0.windows }
       .first { $0.isKeyWindow }
     
-    let tabBarController = TabBarController()
-    
-    window?.rootViewController = tabBarController
+    window?.rootViewController = viewController
   }
 }
 
