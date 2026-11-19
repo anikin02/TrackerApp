@@ -17,11 +17,6 @@ enum EmojiColorItem {
   case color(hex: String, isSelected: Bool)
 }
 
-struct ItemPosition {
-  let section: Int
-  let item: Int
-}
-
 enum NewTrackerRoute {
   case category(selected: String?)
   case schedule(selected: Set<WeekDay>)
@@ -38,6 +33,7 @@ final class NewTrackerViewModel {
   
   // MARK: - Properties
   weak var delegate: TrackersListDelegate?
+  let titleView: String
   let errorText: String
   let columnsCount: CGFloat = 6
   var numberOfOptions: Int { options.count }
@@ -79,7 +75,6 @@ final class NewTrackerViewModel {
     }
   }
   private let isRegularNewTracker: Bool
-  private let titleView: String
   private var options: [Option] = []
   private let maxLengthTitle = 38
   private var selectedSchedule: Set<WeekDay> = []
