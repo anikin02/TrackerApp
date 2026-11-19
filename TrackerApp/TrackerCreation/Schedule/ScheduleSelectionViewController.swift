@@ -10,14 +10,13 @@ import UIKit
 final class ScheduleSelectionViewController: UIViewController {
   var onDone: ((Set<WeekDay>) -> Void)?
   
-  private var selectedDays: Set<WeekDay>
-  private let days = WeekDay.orderedWeek
   private let tableView = UITableView()
   private let doneButton = UIButton(type: .custom)
   private let rowHeight: CGFloat = 75
+  private let viewModel: ScheduleSelectionViewModel
   
-  init(selectedDays: Set<WeekDay> = []) {
-    self.selectedDays = selectedDays
+  init(viewModel: ScheduleSelectionViewModel = .init()) {
+    self.viewModel = viewModel
     super.init(nibName: nil, bundle: nil)
   }
   
@@ -29,6 +28,14 @@ final class ScheduleSelectionViewController: UIViewController {
     title = "Расписание"
     configureTable()
     configureDoneButton()
+    bindViewModel()
+  }
+  
+  private func bindViewModel() {
+    viewModel.onScheduleConfirmed = { [weak self] days in
+      self?.onDone?(days)
+      self?.dismiss(animated: true)
+    }
   }
   
   private func configureTable() {
@@ -47,7 +54,7 @@ final class ScheduleSelectionViewController: UIViewController {
       tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
       tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
       tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-      tableView.heightAnchor.constraint(equalToConstant: rowHeight * CGFloat(days.count))
+      tableView.heightAnchor.constraint(equalToConstant: rowHeight * CGFloat(viewModel.numberOfRows))
     ])
   }
   
@@ -70,14 +77,13 @@ final class ScheduleSelectionViewController: UIViewController {
   }
   
   @objc private func doneTapped() {
-    onDone?(selectedDays)
-    dismiss(animated: true)
+    viewModel.didTapDone()
   }
 }
 
 extension ScheduleSelectionViewController: UITableViewDataSource {
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    days.count
+    viewModel.numberOfRows
   }
   
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -85,17 +91,21 @@ extension ScheduleSelectionViewController: UITableViewDataSource {
       withIdentifier: ScheduleCell.identifier, for: indexPath
     ) as? ScheduleCell else { return UITableViewCell() }
     
-    let day = days[indexPath.row]
-    cell.configCell(title: day.title, isOn: selectedDays.contains(day))
-    cell.onToggle = { [weak self] isOn in
-      if isOn { self?.selectedDays.insert(day) } else { self?.selectedDays.remove(day) }
+    let model = viewModel.cellViewModel(at: indexPath.row)
+    cell.configCell(title: model.title, isOn: model.selected)
+    cell.onToggle = { [weak self, weak cell] isOn in
+      guard let self, let cell,
+            let indexPath = self.tableView.indexPath(for: cell) else { return }
+      self.viewModel.didToggle(at: indexPath.row, isOn: isOn)
     }
     
-    if indexPath.row == days.count - 1 {
-      cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: .greatestFiniteMagnitude)
-    } else {
-      cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-    }
+    let isLast = viewModel.isLastRow(at: indexPath.row)
+    cell.separatorInset = UIEdgeInsets(
+      top: 0,
+      left: 16,
+      bottom: 0,
+      right: isLast ? .greatestFiniteMagnitude : 16
+    )
     return cell
   }
 }

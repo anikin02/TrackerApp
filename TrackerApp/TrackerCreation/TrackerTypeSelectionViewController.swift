@@ -84,10 +84,9 @@ final class TrackerTypeSelectionViewController: UIViewController {
   }
   
   private func showCreationView(title: String, isRegular: Bool) {
-    let viewController = NewTrackerViewController()
-    viewController.delegate = delegate
-    viewController.isRegularNewTracker = isRegular
-    viewController.titleView = title
+    let viewModel = NewTrackerViewModel(isRegularNewTracker: isRegular, titleView: title)
+    viewModel.delegate = delegate
+    let viewController = NewTrackerViewController(viewModel: viewModel)
     let navController = UINavigationController(rootViewController: viewController)
     navController.modalPresentationStyle = .pageSheet
     present(navController, animated: true)

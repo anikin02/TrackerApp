@@ -8,11 +8,6 @@
 import UIKit
 
 final class NewTrackerViewController: UIViewController {
-  // MARK: - Internal Properties
-  weak var delegate: TrackersListDelegate?
-  var isRegularNewTracker = true
-  var titleView: String = "Новая привычка"
-  
   // MARK: - UI Elements
   private let scrollView: UIScrollView = .init()
   private let contentView:UIView = .init()
@@ -29,83 +24,79 @@ final class NewTrackerViewController: UIViewController {
   private let createButton: UIButton = .init()
   private let cancelButton: UIButton = .init()
   private let stackButtons: UIStackView = .init()
+  private let viewModel: NewTrackerViewModel
   
-  // MARK: - Private Properties
-  private enum Option {
-    case category
-    case schedule
-    
-    var title: String {
-      switch self {
-        case .category:
-          return "Категория"
-        case .schedule:
-          return "Расписание"
-      }
-    }
+  init(viewModel: NewTrackerViewModel) {
+    self.viewModel = viewModel
+    super.init(nibName: nil, bundle: nil)
   }
   
-  private enum emojiColorSection: Int, CaseIterable {
-    case emoji = 0
-    case color = 1
-    
-    var title: String {
-      switch self {
-        case .emoji:
-          return "Emoji"
-        case .color:
-          return "Цвет"
-      }
-    }
-    
-    var items: [String] {
-      switch self {
-        case .emoji:
-          return Emojis.allCases.map(\.rawValue)
-        case .color:
-          return HexColorSection.allCases.map(\.rawValue)
-      }
-    }
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
   }
-  
-  private var options: [Option] = []
-  private let maxLengthTitle = 38
-  private var selectedSchedule: Set<WeekDay> = []
-  private var selectedCategory: String?
-  private var selectedEmojiIndexPath: IndexPath?
-  private var selectedColorIndexPath: IndexPath?
-  private let columnsCount: CGFloat = 6
-
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    
-    configureTrackerType()
-    
     configureUI()
+    bindViewModel()
   }
   
   override func viewDidLayoutSubviews() {
     super.viewDidLayoutSubviews()
-
+    
     let height = calculateEmojiColorCollectionHeight(for: emojiColorColletion.bounds.width)
     if emojiColorColletionHeightConstraint?.constant != height {
       emojiColorColletionHeightConstraint?.constant = height
     }
   }
   
-  private func configureTrackerType() {
-    if isRegularNewTracker {
-      options = [.category, .schedule]
-    } else {
-      options = [.category]
-      selectedSchedule = Set(WeekDay.allCases)
+  private func bindViewModel() {
+    viewModel.onCreateButtonStateChange = { [weak self] isEnabled in
+      isEnabled ? self?.enableCreateButton() : self?.disableCreateButton()
+    }
+    viewModel.onTitleErrorChange = { [weak self] isVisible in
+      self?.setError(visible: isVisible)
+    }
+    viewModel.onOptionUpdate = { [weak self] row in
+      self?.optionsTable.reloadRows(at: [IndexPath(row: row, section: 0)], with: .none)
+    }
+    viewModel.onItemsUpdate = { [weak self] positions in
+      let paths = positions.map { IndexPath(item: $0.item, section: $0.section) }
+      self?.emojiColorColletion.reloadItems(at: paths)
+    }
+    viewModel.onRoute = { [weak self] route in
+      self?.present(route)
+    }
+    viewModel.onTrackerCreated = { [weak self] _ in
+      self?.view.window?.rootViewController?.dismiss(animated: true)
+    }
+  }
+  
+  private func present(_ route: NewTrackerRoute) {
+    switch route {
+      case .category(let selected):
+        let viewContoller = CategorySelectionViewController(
+          viewModel: CategorySelectionViewModel(selectedTitle: selected)
+        )
+        viewContoller.categorySelected = { [weak self] title in
+          self?.viewModel.didSelectCategory(title)
+        }
+        present(UINavigationController(rootViewController: viewContoller), animated: true)
+        
+      case .schedule(let selected):
+        let viewContoller = ScheduleSelectionViewController(
+          viewModel: ScheduleSelectionViewModel(selectedDays: selected)
+        )
+        viewContoller.onDone = { [weak self] days in
+          self?.viewModel.didSelectSchedule(days)
+        }
+        present(UINavigationController(rootViewController: viewContoller), animated: true)
     }
   }
   
   private func configureUI() {
     view.backgroundColor = .whiteYP
-    title = titleView
+    title = viewModel.titleView
     
     configureLayout()
     configureTitleField()
@@ -158,7 +149,7 @@ final class NewTrackerViewController: UIViewController {
     
     titleField.addTarget(self, action: #selector(titleChanged), for: .editingChanged)
     
-    errorLabel.text = "Ограничение \(maxLengthTitle) символов"
+    errorLabel.text = viewModel.errorText
     errorLabel.font = .systemFont(ofSize: 17, weight: .regular)
     errorLabel.textColor = .redYP
     errorLabel.textAlignment = .center
@@ -194,7 +185,7 @@ final class NewTrackerViewController: UIViewController {
       optionsTable.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
       optionsTable.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
       optionsTable.topAnchor.constraint(equalTo: titleField.bottomAnchor, constant: 24),
-      optionsTable.heightAnchor.constraint(equalToConstant: 75 * CGFloat(options.count))
+      optionsTable.heightAnchor.constraint(equalToConstant: 75 * CGFloat(viewModel.numberOfOptions))
     ])
   }
   
@@ -278,32 +269,7 @@ final class NewTrackerViewController: UIViewController {
   
   // MARK: - Actions
   @objc private func createButtonTapped() {
-    guard let selectedCategory,
-          let name = titleField.text,
-          let selectedEmojiIndexPath,
-          let selectedColorIndexPath else { return }
-    
-    guard let colorSection = emojiColorSection(rawValue: selectedColorIndexPath.section) else {
-      return
-    }
-    
-    guard let emojiSection = emojiColorSection(rawValue: selectedEmojiIndexPath.section) else {
-      return
-    }
-    
-    let emoji = emojiSection.items[selectedEmojiIndexPath.item]
-    let color = colorSection.items[selectedColorIndexPath.item]
-    
-    let tracker = Tracker(id: UUID(),
-                          name: name,
-                          hexColor: color,
-                          emoji: emoji,
-                          schedule: selectedSchedule,
-                          isRegular: isRegularNewTracker)
-    
-    delegate?.addNewTracker(tracker: tracker, category: selectedCategory)
-    
-    view.window?.rootViewController?.dismiss(animated: true)
+    viewModel.didTappedCreateButton()
   }
   
   @objc private func cancelButtonTapped() {
@@ -311,13 +277,7 @@ final class NewTrackerViewController: UIViewController {
   }
   
   @objc private func titleChanged() {
-    let text = (titleField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-    
-    if !text.isEmpty {
-      updateCreateButtonState()
-    } else {
-      disableCreateButton()
-    }
+    viewModel.titleDidChange(titleField.text ?? "")
   }
   
   // MARK: - Private methods
@@ -339,29 +299,14 @@ final class NewTrackerViewController: UIViewController {
     createButton.isEnabled = false
   }
   
-  private func updateCreateButtonState() {
-    let title = (titleField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-    
-    guard selectedCategory != nil,
-          selectedEmojiIndexPath != nil,
-          selectedColorIndexPath != nil,
-          !selectedSchedule.isEmpty,
-          !title.isEmpty else {
-      disableCreateButton()
-      return
-    }
-    
-    enableCreateButton()
-  }
-  
   private func calculateEmojiColorCollectionHeight(for width: CGFloat) -> CGFloat {
     guard width > 0 else { return 0 }
-
-    let cellSide = floor(width / columnsCount)
+    
+    let cellSide = floor(width / viewModel.columnsCount)
     let headerHeight = getHeaderSize(for: emojiColorColletion).height
-
-    return emojiColorSection.allCases.reduce(0) { total, section in
-      let rows = ceil(CGFloat(section.items.count) / columnsCount)
+    
+    return (0..<viewModel.numberOfSections).reduce(0) { total, section in
+      let rows = ceil(CGFloat(viewModel.numberOfItems(in: section)) / viewModel.columnsCount)
       return total + headerHeight + rows * cellSide
     }
   }
@@ -373,22 +318,11 @@ extension NewTrackerViewController: UITextFieldDelegate {
     let current = textField.text ?? ""
     guard let swiftRange = Range(range, in: current) else { return false }
     let updated = current.replacingCharacters(in: swiftRange, with: string)
-    
-    if updated.count > maxLengthTitle {
-      setError(visible: true)
-      return false
-    }
-    setError(visible: false)
-    return true
+    return viewModel.canChangeTitle(to: updated)
   }
   
   func textFieldShouldClear(_ textField: UITextField) -> Bool {
-    setError(visible: false)
-    return true
-  }
-  
-  func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-    textField.resignFirstResponder()
+    viewModel.titleDidClear()
     return true
   }
 }
@@ -396,41 +330,19 @@ extension NewTrackerViewController: UITextFieldDelegate {
 // MARK: - UITableViewDelegate
 extension NewTrackerViewController: UITableViewDelegate {
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    switch options[indexPath.row] {
-      case .category:
-        let categoryVC = CategorySelectionViewController()
-        categoryVC.categorySelected = { [weak self] category in
-          guard let self else { return }
-          self.selectedCategory = category
-          self.optionsTable.reloadRows(at: [IndexPath(row: indexPath.row, section: 0)], with: .none)
-          self.updateCreateButtonState()
-        }
-        let nav = UINavigationController(rootViewController: categoryVC)
-        present(nav, animated: true)
-      case .schedule:
-        let scheduleVC = ScheduleSelectionViewController(selectedDays: selectedSchedule)
-        scheduleVC.onDone = { [weak self] days in
-          guard let self else { return }
-          self.selectedSchedule = days
-          self.optionsTable.reloadRows(at: [IndexPath(row: indexPath.row, section: 0)], with: .none)
-          self.updateCreateButtonState()
-        }
-        let nav = UINavigationController(rootViewController: scheduleVC)
-        present(nav, animated: true)
-    }
+    viewModel.didSelectOption(at: indexPath.row)
   }
 }
 
 // MARK: - UITableViewDataSource
 extension NewTrackerViewController: UITableViewDataSource {
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    options.count
+    viewModel.numberOfOptions
   }
   
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCell(withIdentifier: "OptionCell")
     ?? UITableViewCell(style: .subtitle, reuseIdentifier: "OptionCell")
-    cell.textLabel?.text = options[indexPath.row].title
     cell.textLabel?.font = .systemFont(ofSize: 17)
     cell.textLabel?.textColor = .blackYP
     cell.backgroundColor = .clear
@@ -439,16 +351,11 @@ extension NewTrackerViewController: UITableViewDataSource {
     cell.detailTextLabel?.font = .systemFont(ofSize: 17, weight: .regular)
     cell.detailTextLabel?.textColor = .grayYP
     
-    switch options[indexPath.row] {
-      case .category:
-        cell.detailTextLabel?.text = selectedCategory
-      case .schedule:
-        cell.detailTextLabel?.text = selectedSchedule.isEmpty
-        ? nil
-        : WeekDay.scheduleDescription(for: selectedSchedule)
-    }
+    let model = viewModel.optionCellModel(at: indexPath.row)
+    cell.textLabel?.text = model.title
+    cell.detailTextLabel?.text = model.detail
     
-    if indexPath.row == options.count - 1 {
+    if viewModel.isLastOption(at: indexPath.row) {
       cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: .greatestFiniteMagnitude)
     } else {
       cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
@@ -461,32 +368,18 @@ extension NewTrackerViewController: UITableViewDataSource {
 // MARK: - UICollectionViewDelegate
 extension NewTrackerViewController: UICollectionViewDelegate {
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-    guard let section = emojiColorSection(rawValue: indexPath.section) else { return }
-    
-    switch section {
-      case .emoji:
-        guard selectedEmojiIndexPath != indexPath else { return }
-        let old = selectedEmojiIndexPath
-        selectedEmojiIndexPath = indexPath
-        collectionView.reloadItems(at: [indexPath, old].compactMap { $0 })
-      case .color:
-        guard selectedColorIndexPath != indexPath else { return }
-        let old = selectedColorIndexPath
-        selectedColorIndexPath = indexPath
-        collectionView.reloadItems(at: [indexPath, old].compactMap { $0 })
-    }
-    updateCreateButtonState()
+    viewModel.didSelectItem(at: ItemPosition(section: indexPath.section, item: indexPath.item))
   }
 }
 
 // MARK: - UICollectionViewDataSource
 extension NewTrackerViewController: UICollectionViewDataSource {
   func numberOfSections(in collectionView: UICollectionView) -> Int {
-    emojiColorSection.allCases.count
+    viewModel.numberOfSections
   }
   
   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-    emojiColorSection(rawValue: section)?.items.count ?? 0
+    viewModel.numberOfItems(in: section)
   }
   
   func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
@@ -498,29 +391,27 @@ extension NewTrackerViewController: UICollectionViewDataSource {
           ) as? HeaderView
             else { return UICollectionReusableView() }
     
-    header.configureHeader(title: emojiColorSection(rawValue: indexPath.section)?.title ?? "")
+    header.configureHeader(title: viewModel.headerTitle(for: indexPath.section))
     return header
   }
   
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-    guard let section = emojiColorSection(rawValue: indexPath.section) else {
-      return UICollectionViewCell()
-    }
-    let item = section.items[indexPath.item]
+    let position = ItemPosition(section: indexPath.section, item: indexPath.item)
+    guard let item = viewModel.item(at: position) else { return UICollectionViewCell() }
     
-    switch section {
-      case .emoji:
+    switch item {
+      case let .emoji(emoji, isSelected):
         guard let cell = collectionView.dequeueReusableCell(
           withReuseIdentifier: EmojiCell.reuseIdentifier, for: indexPath
         ) as? EmojiCell else { return UICollectionViewCell() }
-        cell.configureCell(with: item, isSelected: indexPath == selectedEmojiIndexPath)
+        cell.configureCell(with: emoji, isSelected: isSelected)
         return cell
         
-      case .color:
+      case let .color(hex, isSelected):
         guard let cell = collectionView.dequeueReusableCell(
           withReuseIdentifier: ColorCell.reuseIdentifier, for: indexPath
         ) as? ColorCell else { return UICollectionViewCell() }
-        cell.configureCell(with: UIColor(hex: item) ?? .blackYP, isSelected: indexPath == selectedColorIndexPath)
+        cell.configureCell(with: UIColor(hex: hex) ?? .blackYP, isSelected: isSelected)
         return cell
     }
   }
@@ -532,7 +423,7 @@ extension NewTrackerViewController: UICollectionViewDelegateFlowLayout {
                       layout collectionViewLayout: UICollectionViewLayout,
                       sizeForItemAt indexPath: IndexPath) -> CGSize {
     let available = collectionView.bounds.width
-    return CGSize(width: floor(available / 6), height: floor(available / 6))
+    return CGSize(width: floor(available / viewModel.columnsCount), height: floor(available / viewModel.columnsCount))
   }
   
   func collectionView(_ collectionView: UICollectionView,
@@ -562,3 +453,5 @@ extension NewTrackerViewController: UICollectionViewDelegateFlowLayout {
       verticalFittingPriority: .fittingSizeLevel)
   }
 }
+
+
