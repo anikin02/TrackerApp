@@ -13,7 +13,16 @@ final class CategorySelectionViewController: UIViewController {
   private let emptyStateView: EmptyStateView = .init()
   private let createCategoryButton: UIButton = .init()
   private var tableHeightConstraint: NSLayoutConstraint?
-  private let viewModel: CategorySelectionViewModel = .init()
+  private let viewModel: CategorySelectionViewModel
+  
+  init(viewModel: CategorySelectionViewModel = .init()) {
+    self.viewModel = viewModel
+    super.init(nibName: nil, bundle: nil)
+  }
+  
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
   
   override func viewDidLoad() {
     super.viewDidLoad()
