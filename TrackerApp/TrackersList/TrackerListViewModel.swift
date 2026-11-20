@@ -13,7 +13,12 @@ protocol TrackersListDelegate: AnyObject {
 
 enum TrackersUpdate {
   case reload
-  case insert(sections: [Int], items: [ItemPosition])
+  case batch(
+    deletedSections: [Int],
+    insertedSections: [Int],
+    deletedItems: [ItemPosition],
+    insertedItems: [ItemPosition]
+  )
   case reloadItems([ItemPosition])
 }
 
@@ -75,7 +80,8 @@ final class TrackersListViewModel {
       emoji: tracker.emoji,
       count: daysCount,
       hexColor: tracker.hexColor,
-      isDone: isDone(with: tracker)
+      isDone: isDone(with: tracker),
+      isPinned: tracker.isPinned
     )
   }
   
@@ -99,31 +105,68 @@ final class TrackersListViewModel {
     }
   }
   
+  func isAlreadyPinned(at position: ItemPosition) -> Bool {
+    visibleCategories[position.section].trackers[position.item].isPinned
+  }
+  
+  func didTapPinnedTracker(on position: ItemPosition) {
+    let category = visibleCategories[position.section].title
+    let oldTracker = visibleCategories[position.section].trackers[position.item]
+    let updateTracker = Tracker(id: oldTracker.id, name: oldTracker.name, hexColor: oldTracker.hexColor, emoji: oldTracker.emoji, schedule: oldTracker.schedule, isPinned: !oldTracker.isPinned)
+    do {
+      try trackerStore.updateTracker(updateTracker, in: category)
+    } catch {
+      assertionFailure("Не удалось сохранить трекер: \(error)")
+    }
+  }
+  
+  func didTapEditedTracker(on position: ItemPosition) {
+    
+  }
+  
+  func didTapDeletedTracker(at position: ItemPosition) {
+    
+  }
+  
   private func isDone(with tracker: Tracker) -> Bool {
     completedTrackers.contains {
       $0.trackerId == tracker.id && Calendar.current.isDate($0.date, inSameDayAs: currentDate)
     }
   }
   
-  private func getDateCategories() -> [TrackerCategory] {
-    var result: [TrackerCategory] = []
+  private func makeCategoriesForCurrentDate() -> [TrackerCategory] {
+    var pinnedTrackers: [Tracker] = []
+    var regularCategories: [TrackerCategory] = []
+    
+    let numberDay = Calendar.current.component(.weekday, from: currentDate)
+    guard let currentDay = WeekDay(rawValue: numberDay) else { return [] }
     
     for category in categories {
-      let title = category.title
-      var trackers: [Tracker] = []
+      var unpinnedTrackers: [Tracker] = []
       
       for tracker in category.trackers {
-        let numberDay = Calendar.current.component(.weekday, from: currentDate)
-        if let day = WeekDay(rawValue: numberDay),
-           tracker.schedule.contains(day){
-          trackers.append(tracker)
+        guard tracker.schedule.contains(currentDay) else { continue }
+        
+        if tracker.isPinned {
+          pinnedTrackers.append(tracker)
+        } else {
+          unpinnedTrackers.append(tracker)
         }
       }
-      if !trackers.isEmpty {
-        result.append(TrackerCategory(title: title, trackers: trackers))
+      
+      if !unpinnedTrackers.isEmpty {
+        regularCategories.append(
+          TrackerCategory(title: category.title, trackers: unpinnedTrackers)
+        )
       }
     }
-    return result
+    
+    if !pinnedTrackers.isEmpty {
+      let pinnedCategory = TrackerCategory(title: "Закрепленные", trackers: pinnedTrackers)
+      regularCategories.insert(pinnedCategory, at: 0)
+    }
+    
+    return regularCategories
   }
   
   private func filterBySearch(_ categories: [TrackerCategory], query: String) -> [TrackerCategory] {
@@ -143,7 +186,8 @@ final class TrackersListViewModel {
   }
   
   private func updateVisibleCategories() {
-    visibleCategories = filterBySearch(getDateCategories(), query: searchText)
+    visibleCategories = filterBySearch(makeCategoriesForCurrentDate(), query: searchText)
+    
     onUpdate?(.reload)
     onEmptyStateChange?(visibleCategories.isEmpty)
   }
@@ -155,36 +199,88 @@ extension TrackersListViewModel: TrackerStoreDelegate {
     let oldVisible = visibleCategories
     
     categories = trackerCategoryStore.categories
-    let newVisible = filterBySearch(getDateCategories(), query: searchText)
+    
+    let newVisible = filterBySearch(
+      makeCategoriesForCurrentDate(),
+      query: searchText
+    )
+    
     visibleCategories = newVisible
+    
     onEmptyStateChange?(visibleCategories.isEmpty)
     
-    var insertedSections: [Int] = []
+    let update = makeUpdate(
+      old: oldVisible,
+      new: newVisible
+    )
+    
+    onUpdate?(update)
+  }
+  
+  private func makeUpdate(old: [TrackerCategory], new: [TrackerCategory]) -> TrackersUpdate {
+    let oldTitles = old.map(\.title)
+    let newTitles = new.map(\.title)
+    
+    let deletedSections = oldTitles.enumerated().compactMap { index, title in
+      newTitles.contains(title) ? nil : index
+    }
+    
+    let insertedSections = newTitles.enumerated().compactMap { index, title in
+      oldTitles.contains(title) ? nil : index
+    }
+    
+    let oldCommon = oldTitles.filter { newTitles.contains($0) }
+    let newCommon = newTitles.filter { oldTitles.contains($0) }
+    
+    guard oldCommon == newCommon else {
+      return .reload
+    }
+    
+    var deletedItems: [ItemPosition] = []
     var insertedItems: [ItemPosition] = []
     
-    for (section, category) in visibleCategories.enumerated() {
-      if let old = oldVisible.first(where: { $0.title == category.title }) {
-        let oldIds = Set(old.trackers.map(\.id))
-        for (item, tracker) in category.trackers.enumerated() where !oldIds.contains(tracker.id) {
-          insertedItems.append(ItemPosition(section: section, item: item))
+    for (section, category) in old.enumerated() {
+      guard let newSection = newTitles.firstIndex(of: category.title) else {
+        continue
+      }
+      
+      let newCategory = new[newSection]
+      
+      let newIDs = Set(newCategory.trackers.map(\.id))
+      
+      for (item, tracker) in category.trackers.enumerated() {
+        if !newIDs.contains(tracker.id) {
+          deletedItems.append(
+            ItemPosition(section: section, item: item)
+          )
         }
-      } else {
-        insertedSections.append(section)
       }
     }
     
-    let oldCount = oldVisible.reduce(0) { $0 + $1.trackers.count }
-    let newCount = visibleCategories.reduce(0) { $0 + $1.trackers.count }
-    let insertedInNewSections = insertedSections.reduce(0) { $0 + visibleCategories[$1].trackers.count }
-    let isPureInsert = oldVisible.count + insertedSections.count == visibleCategories.count
-    && oldCount + insertedItems.count + insertedInNewSections == newCount
-    
-    guard isPureInsert else {
-      onUpdate?(.reload)
-      return
+    for (section, category) in new.enumerated() {
+      guard let oldSection = oldTitles.firstIndex(of: category.title) else {
+        continue
+      }
+      
+      let oldCategory = old[oldSection]
+      
+      let oldIDs = Set(oldCategory.trackers.map(\.id))
+      
+      for (item, tracker) in category.trackers.enumerated() {
+        if !oldIDs.contains(tracker.id) {
+          insertedItems.append(
+            ItemPosition(section: section, item: item)
+          )
+        }
+      }
     }
-    guard !insertedSections.isEmpty || !insertedItems.isEmpty else { return }
-    onUpdate?(.insert(sections: insertedSections, items: insertedItems))
+    
+    return .batch(
+      deletedSections: deletedSections,
+      insertedSections: insertedSections,
+      deletedItems: deletedItems,
+      insertedItems: insertedItems
+    )
   }
 }
 

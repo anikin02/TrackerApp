@@ -58,10 +58,25 @@ final class TrackersListViewController: UIViewController {
     switch update {
       case .reload:
         collectionView.reloadData()
-      case let .insert(sections, items):
+      case let .batch(
+        deletedSections,
+        insertedSections,
+        deletedItems,
+        insertedItems
+      ):
         collectionView.performBatchUpdates {
-          collectionView.insertSections(IndexSet(sections))
-          collectionView.insertItems(at: items.map(indexPath))
+          collectionView.deleteSections(
+            IndexSet(deletedSections)
+          )
+          collectionView.deleteItems(
+            at: deletedItems.map(indexPath)
+          )
+          collectionView.insertSections(
+            IndexSet(insertedSections)
+          )
+          collectionView.insertItems(
+            at: insertedItems.map(indexPath)
+          )
         }
       case let .reloadItems(items):
         for position in items {
@@ -181,8 +196,11 @@ final class TrackersListViewController: UIViewController {
     collectionView.delegate = self
     collectionView.dataSource = self
     collectionView.contentInsetAdjustmentBehavior = .never
+    collectionView.allowsMultipleSelection = false
+    collectionView.clipsToBounds = false
     
     view.addSubview(collectionView)
+    
     
     NSLayoutConstraint.activate([
       collectionView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 18),
@@ -271,7 +289,44 @@ extension TrackersListViewController: UICollectionViewDelegateFlowLayout {
 }
 
 extension TrackersListViewController: UICollectionViewDelegate {
+  func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
+    guard indexPaths.count > 0 else { return nil }
+    
+    let indexPath = indexPaths[0]
+    let position = ItemPosition(section: indexPath.section, item: indexPath.row)
+    let isAlreadyPinned = viewModel.isAlreadyPinned(at: position)
+    
+    return UIContextMenuConfiguration(identifier: indexPath as NSCopying, previewProvider: nil) { [weak self] _ in
+      let pin = UIAction(title: isAlreadyPinned ? "Открепить" : "Закрепить") { _ in
+        self?.viewModel.didTapPinnedTracker(on: position)
+      }
+      let edit = UIAction(title: "Редактировать") { _ in
+        self?.viewModel.didTapEditedTracker(on: position)
+      }
+      let delete = UIAction(title: "Удалить", attributes: .destructive) { _ in
+        self?.viewModel.didTapDeletedTracker(at: position)
+      }
+      return UIMenu(children: [pin, edit, delete])
+    }
+  }
   
+  func collectionView(_ collectionView: UICollectionView, contextMenuConfiguration configuration: UIContextMenuConfiguration, highlightPreviewForItemAt indexPath: IndexPath) -> UITargetedPreview? {
+    makeTargetedPreview(for: indexPath)
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, contextMenuConfiguration configuration: UIContextMenuConfiguration, dismissalPreviewForItemAt indexPath: IndexPath) -> UITargetedPreview? {
+    makeTargetedPreview(for: indexPath)
+  }
+  
+  private func makeTargetedPreview(for indexPath: IndexPath) -> UITargetedPreview? {
+    guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerViewCell else { return nil }
+    
+    let view = cell.previewView
+    let parameters = UIPreviewParameters()
+    parameters.backgroundColor = .clear
+    parameters.visiblePath = UIBezierPath(roundedRect: view.bounds, cornerRadius: 16)
+    return UITargetedPreview(view: view, parameters: parameters)
+  }
 }
 
 // MARK: - TrackerCellDelegate
