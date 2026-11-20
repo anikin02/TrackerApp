@@ -14,13 +14,15 @@ struct Tracker {
   let emoji: String
   let schedule: Set<WeekDay>
   let isRegular: Bool
+  let isPinned: Bool
   
-  init(id: UUID, name: String, hexColor: String, emoji: String, schedule: Set<WeekDay>, isRegular: Bool = true) {
+  init(id: UUID, name: String, hexColor: String, emoji: String, schedule: Set<WeekDay>, isRegular: Bool = true, isPinned: Bool = false) {
     self.id = id
     self.name = name
     self.hexColor = hexColor
     self.emoji = emoji
     self.schedule = schedule
     self.isRegular = isRegular
+    self.isPinned = isPinned
   }
 }

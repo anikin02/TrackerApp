@@ -11,6 +11,7 @@ struct TrackerCellModel {
   let count: Int
   let hexColor: String
   let isDone: Bool
+  let isPinned: Bool
   
   var daysCountText: String {
     let format: String

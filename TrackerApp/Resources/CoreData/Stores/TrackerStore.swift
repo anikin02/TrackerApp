@@ -50,10 +50,41 @@ final class TrackerStore: NSObject {
     object.emoji = tracker.emoji
     object.hexColor = tracker.hexColor
     object.isRegular = tracker.isRegular
+    object.isPinned = tracker.isPinned
     object.schedule = try? JSONEncoder().encode(tracker.schedule)
     object.category = try fetchCategory(title: categoryTitle)
     
     try context.save()
+  }
+  
+  func updateTracker(_ tracker: Tracker, in categoryTitle: String) throws {
+    guard let object = try fetchTracker(id: tracker.id) else {
+      return
+    }
+
+    object.name = tracker.name
+    object.emoji = tracker.emoji
+    object.hexColor = tracker.hexColor
+    object.isPinned = tracker.isPinned
+    object.schedule = try? JSONEncoder().encode(tracker.schedule)
+
+    try context.save()
+  }
+
+  func deleteTracker(id: UUID) throws {
+    guard let object = try fetchTracker(id: id) else {
+      return
+    }
+    
+    context.delete(object)
+    try context.save()
+  }
+
+  private func fetchTracker(id: UUID) throws -> TrackerCoreData? {
+    let request = TrackerCoreData.fetchRequest()
+    request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+    request.fetchLimit = 1
+    return try context.fetch(request).first
   }
   
   private func fetchCategory(title: String) throws -> TrackerCategoryCoreData? {
@@ -74,7 +105,8 @@ final class TrackerStore: NSObject {
                    hexColor: hexColor,
                    emoji: emoji,
                    schedule: schedule,
-                   isRegular: object.isRegular)
+                   isRegular: object.isRegular,
+                   isPinned: object.isPinned)
   }
 }
 
