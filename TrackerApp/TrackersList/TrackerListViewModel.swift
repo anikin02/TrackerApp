@@ -120,12 +120,16 @@ final class TrackersListViewModel {
     }
   }
   
-  func didTapEditedTracker(on position: ItemPosition) {
+  func didTapEditedTracker(on position: ItemPosition, newTracker: Tracker) {
     
   }
   
   func didTapDeletedTracker(at position: ItemPosition) {
-    
+    do {
+      try trackerStore.deleteTracker(id: visibleCategories[position.section].trackers[position.item].id)
+    } catch {
+      assertionFailure("Не удалось сохранить трекер: \(error)")
+    }
   }
   
   private func isDone(with tracker: Tracker) -> Bool {

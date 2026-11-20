@@ -301,7 +301,7 @@ extension TrackersListViewController: UICollectionViewDelegate {
         self?.viewModel.didTapPinnedTracker(on: position)
       }
       let edit = UIAction(title: "Редактировать") { _ in
-        self?.viewModel.didTapEditedTracker(on: position)
+        
       }
       let delete = UIAction(title: "Удалить", attributes: .destructive) { _ in
         self?.viewModel.didTapDeletedTracker(at: position)
