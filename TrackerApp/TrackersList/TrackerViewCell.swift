@@ -31,17 +31,20 @@ final class TrackerViewCell: UICollectionViewCell {
     fatalError("init(coder:) has not been implemented")
   }
   
-  func configureCell(with model: TrackerCellModel) {
+  func configure(with model: TrackerCellModel) {
     nameLabel.text = model.name
     emojiLabel.text = model.emoji
-    countLabel.text = model.daysCountText
     
     rootStack.backgroundColor = UIColor(hex: model.hexColor)
-    
-    isDone = model.isDone
     doneButton.tintColor = UIColor(hex: model.hexColor)
     doneButton.backgroundColor = .whiteYP
     
+    updateCompletion(with: model)
+  }
+  
+  func updateCompletion(with model: TrackerCellModel) {
+    countLabel.text = model.daysCountText
+    isDone = model.isDone
     setStateDoneButton()
   }
   

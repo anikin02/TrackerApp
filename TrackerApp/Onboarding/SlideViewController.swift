@@ -8,8 +8,8 @@
 import UIKit
 
 final class SlideViewController: UIViewController {
-  let titleLabel: UILabel = .init()
-  let coverImageView: UIImageView = .init()
+  private let titleLabel: UILabel = .init()
+  private let coverImageView: UIImageView = .init()
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -17,7 +17,7 @@ final class SlideViewController: UIViewController {
     configureUI()
   }
   
-  func configureView(title: String, cover: UIImage) {
+  func configure(title: String, cover: UIImage) {
     titleLabel.text = title
     coverImageView.image = cover
   }

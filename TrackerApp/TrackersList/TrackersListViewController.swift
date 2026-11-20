@@ -64,14 +64,18 @@ final class TrackersListViewController: UIViewController {
           collectionView.insertItems(at: items.map(indexPath))
         }
       case let .reloadItems(items):
-        collectionView.reloadItems(at: items.map(indexPath))
+        for position in items {
+          guard let cell = collectionView.cellForItem(at: indexPath(for: position))
+                  as? TrackerViewCell else { continue }
+          cell.updateCompletion(with: viewModel.cellModel(position: position))
+        }
     }
   }
-
+  
   private func indexPath(for position: ItemPosition) -> IndexPath {
     IndexPath(item: position.item, section: position.section)
   }
-
+  
   private func configureNavigationBar() {
     configureAddTrackerButton()
     configureDateFilterPicker()
@@ -235,7 +239,7 @@ extension TrackersListViewController: UICollectionViewDataSource {
     
     let model = viewModel.cellModel(position: ItemPosition(section: indexPath.section, item: indexPath.row))
     cell.delegate = self
-    cell.configureCell(with: model)
+    cell.configure(with: model)
     return cell
   }
 }
