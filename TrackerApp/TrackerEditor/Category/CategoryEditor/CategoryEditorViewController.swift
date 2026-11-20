@@ -1,5 +1,5 @@
 //
-//  CategoryCreationViewController.swift
+//  CategoryEditorViewController.swift
 //  TrackerApp
 //
 //  Created by Данил on 11/11/2026.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class CategoryCreationViewController: UIViewController {
+final class CategoryEditorViewController: UIViewController {
   var isDone: ((String) -> Void)?
   private let titleField: UITextField = .init()
   private let createButton: UIButton = .init()

@@ -160,7 +160,7 @@ final class CategorySelectionViewController: UIViewController {
   }
   
   @objc private func createCategoryButtonTapped() {
-    let categoryVC = CategoryCreationViewController()
+    let categoryVC = CategoryEditorViewController()
     categoryVC.isDone = { [weak self] title in
       self?.viewModel.addCategory(title: title)
     }

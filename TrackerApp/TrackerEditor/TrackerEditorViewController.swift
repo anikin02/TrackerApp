@@ -1,5 +1,5 @@
 //
-//  NewTrackerViewController.swift
+//  TrackerEditorViewController.swift
 //  TrackerApp
 //
 //  Created by Данил on 06/11/2026.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class NewTrackerViewController: UIViewController {
+final class TrackerEditorViewController: UIViewController {
   // MARK: - UI Elements
   private let scrollView: UIScrollView = .init()
   private let contentView:UIView = .init()
@@ -26,7 +26,7 @@ final class NewTrackerViewController: UIViewController {
   private let stackButtons: UIStackView = .init()
   private let viewModel: NewTrackerViewModel
   
-  init(viewModel: NewTrackerViewModel) {
+  init(viewModel: TrackerEditorViewModel) {
     self.viewModel = viewModel
     super.init(nibName: nil, bundle: nil)
   }
@@ -313,7 +313,7 @@ final class NewTrackerViewController: UIViewController {
 }
 
 // MARK: - UITextFieldDelegate
-extension NewTrackerViewController: UITextFieldDelegate {
+extension TrackerEditorViewController: UITextFieldDelegate {
   func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
     let current = textField.text ?? ""
     guard let swiftRange = Range(range, in: current) else { return false }
@@ -328,14 +328,14 @@ extension NewTrackerViewController: UITextFieldDelegate {
 }
 
 // MARK: - UITableViewDelegate
-extension NewTrackerViewController: UITableViewDelegate {
+extension TrackerEditorViewController: UITableViewDelegate {
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     viewModel.didSelectOption(at: indexPath.row)
   }
 }
 
 // MARK: - UITableViewDataSource
-extension NewTrackerViewController: UITableViewDataSource {
+extension TrackerEditorViewController: UITableViewDataSource {
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     viewModel.numberOfOptions
   }
@@ -366,14 +366,14 @@ extension NewTrackerViewController: UITableViewDataSource {
 }
 
 // MARK: - UICollectionViewDelegate
-extension NewTrackerViewController: UICollectionViewDelegate {
+extension TrackerEditorViewController: UICollectionViewDelegate {
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     viewModel.didSelectItem(at: ItemPosition(section: indexPath.section, item: indexPath.item))
   }
 }
 
 // MARK: - UICollectionViewDataSource
-extension NewTrackerViewController: UICollectionViewDataSource {
+extension TrackerEditorViewController: UICollectionViewDataSource {
   func numberOfSections(in collectionView: UICollectionView) -> Int {
     viewModel.numberOfSections
   }
@@ -418,7 +418,7 @@ extension NewTrackerViewController: UICollectionViewDataSource {
 }
 
 // MARK: - UICollectionViewDelegateFlowLayout
-extension NewTrackerViewController: UICollectionViewDelegateFlowLayout {
+extension TrackerEditorViewController: UICollectionViewDelegateFlowLayout {
   func collectionView(_ collectionView: UICollectionView,
                       layout collectionViewLayout: UICollectionViewLayout,
                       sizeForItemAt indexPath: IndexPath) -> CGSize {

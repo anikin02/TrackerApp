@@ -1,5 +1,5 @@
 //
-//  NewTrackerViewModel.swift
+//  TrackerEditorViewModel.swift
 //  TrackerApp
 //
 //  Created by Данил on 18/11/2026.
@@ -22,7 +22,7 @@ enum NewTrackerRoute {
   case schedule(selected: Set<WeekDay>)
 }
 
-final class NewTrackerViewModel {
+final class TrackerEditorViewModel {
   // MARK: - Bindings
   var onCreateButtonStateChange: Binding<Bool>?
   var onTitleErrorChange: Binding<Bool>?
