@@ -9,6 +9,7 @@ import Foundation
 
 protocol TrackersListDelegate: AnyObject {
   func addNewTracker(tracker: Tracker, category: String)
+  func changeTracker(newTracker: Tracker, category: String)
 }
 
 enum TrackersUpdate {
@@ -114,7 +115,7 @@ final class TrackersListViewModel {
     let oldTracker = visibleCategories[position.section].trackers[position.item]
     let updateTracker = Tracker(id: oldTracker.id, name: oldTracker.name, hexColor: oldTracker.hexColor, emoji: oldTracker.emoji, schedule: oldTracker.schedule, isPinned: !oldTracker.isPinned)
     do {
-      try trackerStore.updateTracker(updateTracker, in: category)
+      try trackerStore.pinTracker(updateTracker)
     } catch {
       assertionFailure("Не удалось сохранить трекер: \(error)")
     }

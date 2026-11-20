@@ -57,6 +57,16 @@ final class TrackerStore: NSObject {
     try context.save()
   }
   
+  func pinTracker(_ tracker: Tracker) throws {
+    guard let object = try fetchTracker(id: tracker.id) else {
+      return
+    }
+    
+    object.isPinned = tracker.isPinned
+
+    try context.save()
+  }
+  
   func updateTracker(_ tracker: Tracker, in categoryTitle: String) throws {
     guard let object = try fetchTracker(id: tracker.id) else {
       return
@@ -67,6 +77,7 @@ final class TrackerStore: NSObject {
     object.hexColor = tracker.hexColor
     object.isPinned = tracker.isPinned
     object.schedule = try? JSONEncoder().encode(tracker.schedule)
+    object.category = try fetchCategory(title: categoryTitle)
 
     try context.save()
   }
