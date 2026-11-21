@@ -20,6 +20,8 @@ final class SplashViewController: UIViewController {
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
     
+    FilterSavingService.shared.resetFilter()
+    
     if FirstLaunchService.shared.hasLaunchedBefore {
       switchToViewController(viewController: TabBarController())
     } else {

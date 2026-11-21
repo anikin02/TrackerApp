@@ -33,7 +33,9 @@ final class TrackersListViewModel {
     visibleCategories.count
   }
   
+  // MARK: - Private Properties
   private(set) var currentDate: Date = .init()
+  private(set) var isFilter: Bool = false
   private var searchText: String = ""
   private var categories: [TrackerCategory] = []
   private var completedTrackers: [TrackerRecord] = []
@@ -42,12 +44,14 @@ final class TrackersListViewModel {
   private let trackerRecordStore: TrackerRecordStore = .init()
   private let trackerStore: TrackerStore = .init()
   
+  // MARK: - Init
   init() {
     trackerStore.delegate = self
     trackerRecordStore.delegate = self
     trackerCategoryStore.delegate = self
   }
   
+  // MARK: - Methods
   func viewDidLoad() {
     categories = trackerCategoryStore.categories
     completedTrackers = trackerRecordStore.records
@@ -100,7 +104,16 @@ final class TrackersListViewModel {
         try trackerRecordStore.addNewTrackerRecord(trackerRecord: record)
       }
       completedTrackers = trackerRecordStore.records
-      onUpdate?(.reloadItems([position]))
+      let filter = FilterSavingService.shared.savedFilter
+      guard filter == .showComplitedTrackers || filter == .showUncomplitedTrackers else {
+        onUpdate?(.reloadItems([position]))
+        return
+      }
+      
+      let old = visibleCategories
+      visibleCategories = makeVisibleCategories()
+      onEmptyStateChange?(visibleCategories.isEmpty)
+      makeUpdates(old: old, new: visibleCategories).forEach { onUpdate?($0) }
     } catch {
       assertionFailure("Не удалось обновить запись: \(error)")
     }
@@ -137,6 +150,7 @@ final class TrackersListViewModel {
     }
   }
   
+  // MARK: - Private Methods
   private func isDone(with tracker: Tracker) -> Bool {
     completedTrackers.contains {
       $0.trackerId == tracker.id && Calendar.current.isDate($0.date, inSameDayAs: currentDate)
@@ -178,6 +192,32 @@ final class TrackersListViewModel {
     return regularCategories
   }
   
+  private func makeComplitedTrackers(categories: [TrackerCategory]) -> [TrackerCategory] {
+    return categories.compactMap { category in
+      let trackers = category.trackers.filter { isDone(with: $0) }
+      
+      guard !trackers.isEmpty else { return nil }
+      
+      return TrackerCategory(
+        title: category.title,
+        trackers: trackers
+      )
+    }
+  }
+  
+  private func makeUncomplitedTrackers(categories: [TrackerCategory]) -> [TrackerCategory] {
+    return categories.compactMap { category in
+      let trackers = category.trackers.filter { !isDone(with: $0) }
+      
+      guard !trackers.isEmpty else { return nil }
+      
+      return TrackerCategory(
+        title: category.title,
+        trackers: trackers
+      )
+    }
+  }
+  
   private func filterBySearch(_ categories: [TrackerCategory], query: String) -> [TrackerCategory] {
     let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !query.isEmpty else { return categories }
@@ -194,9 +234,19 @@ final class TrackersListViewModel {
     }
   }
   
+  private func makeVisibleCategories() -> [TrackerCategory] {
+    var result = filterBySearch(makeCategoriesForCurrentDate(), query: searchText)
+    let optionFilter = FilterSavingService.shared.savedFilter
+    if optionFilter == .showComplitedTrackers {
+      result = makeComplitedTrackers(categories: result)
+    } else if optionFilter == .showUncomplitedTrackers {
+      result = makeUncomplitedTrackers(categories: result)
+    }
+    return result
+  }
+  
   private func updateVisibleCategories() {
-    visibleCategories = filterBySearch(makeCategoriesForCurrentDate(), query: searchText)
-    
+    visibleCategories = makeVisibleCategories()
     onUpdate?(.reload)
     onEmptyStateChange?(visibleCategories.isEmpty)
   }
@@ -206,18 +256,10 @@ final class TrackersListViewModel {
 extension TrackersListViewModel: TrackerStoreDelegate {
   func trackerStoreDidUpdate() {
     let oldVisible = visibleCategories
-    
     categories = trackerCategoryStore.categories
-    
-    let newVisible = filterBySearch(
-      makeCategoriesForCurrentDate(),
-      query: searchText
-    )
-    
-    visibleCategories = newVisible
-    
+    visibleCategories = makeVisibleCategories()
+    let newVisible = visibleCategories
     onEmptyStateChange?(visibleCategories.isEmpty)
-    
     let updates = makeUpdates(
       old: oldVisible,
       new: newVisible
@@ -229,88 +271,85 @@ extension TrackersListViewModel: TrackerStoreDelegate {
   private func makeUpdates(old: [TrackerCategory], new: [TrackerCategory]) -> [TrackersUpdate] {
     let oldTitles = old.map(\.title)
     let newTitles = new.map(\.title)
-    
+
     let deletedSections = oldTitles.enumerated().compactMap { index, title in
       newTitles.contains(title) ? nil : index
     }
-    
+
     let insertedSections = newTitles.enumerated().compactMap { index, title in
       oldTitles.contains(title) ? nil : index
     }
-    
-    let oldCommon = oldTitles.filter { newTitles.contains($0) }
-    let newCommon = newTitles.filter { oldTitles.contains($0) }
-    
-    guard oldCommon == newCommon else {
+
+    // Порядок общих секций изменился: точечный diff неприменим
+    guard oldTitles.filter(newTitles.contains) == newTitles.filter(oldTitles.contains) else {
       return [.reload]
     }
-    
+
     var deletedItems: [ItemPosition] = []
     var insertedItems: [ItemPosition] = []
     var reloadedItems: [ItemPosition] = []
-    
-    for (section, category) in old.enumerated() {
-      guard let newSection = newTitles.firstIndex(of: category.title) else {
-        continue
-      }
-      
+
+    // Удаления: индексы по СТАРЫМ данным
+    for (oldSection, category) in old.enumerated() {
+      guard let newSection = newTitles.firstIndex(of: category.title) else { continue }
+
       let newTrackers = new[newSection].trackers
       let newIDs = Set(newTrackers.map(\.id))
       let oldIDs = Set(category.trackers.map(\.id))
-      
-      let oldCommonIDs = category.trackers.map(\.id).filter { newIDs.contains($0) }
-      let newCommonIDs = newTrackers.map(\.id).filter { oldIDs.contains($0) }
-      guard oldCommonIDs == newCommonIDs else {
+
+      // Порядок общих трекеров внутри секции изменился
+      guard category.trackers.map(\.id).filter(newIDs.contains)
+              == newTrackers.map(\.id).filter(oldIDs.contains) else {
         return [.reload]
       }
-      
+
+      for (item, tracker) in category.trackers.enumerated() where !newIDs.contains(tracker.id) {
+        deletedItems.append(ItemPosition(section: oldSection, item: item))
+      }
+    }
+
+    // Вставки и изменения: индексы по НОВЫМ данным
+    for (newSection, category) in new.enumerated() {
+      guard let oldSection = oldTitles.firstIndex(of: category.title) else { continue }
+
+      var oldByID: [UUID: Tracker] = [:]
+      for tracker in old[oldSection].trackers { oldByID[tracker.id] = tracker }
+
       for (item, tracker) in category.trackers.enumerated() {
-        if let updated = newTrackers.first(where: { $0.id == tracker.id }) {
-          if updated != tracker {
-            reloadedItems.append(ItemPosition(section: section, item: item))
+        if let oldTracker = oldByID[tracker.id] {
+          if oldTracker != tracker {
+            reloadedItems.append(ItemPosition(section: newSection, item: item))
           }
         } else {
-          deletedItems.append(ItemPosition(section: section, item: item))
+          insertedItems.append(ItemPosition(section: newSection, item: item))
         }
       }
     }
-    
-    for (section, category) in new.enumerated() {
-      guard let oldSection = oldTitles.firstIndex(of: category.title) else {
-        continue
-      }
-      let oldIDs = Set(old[oldSection].trackers.map(\.id))
-      for (item, tracker) in category.trackers.enumerated() where !oldIDs.contains(tracker.id) {
-        insertedItems.append(ItemPosition(section: section, item: item))
-      }
-    }
-    
+
     var updates: [TrackersUpdate] = []
-      if !deletedSections.isEmpty || !insertedSections.isEmpty
-          || !deletedItems.isEmpty || !insertedItems.isEmpty {
-        updates.append(.batch(deletedSections: deletedSections,
-                              insertedSections: insertedSections,
-                              deletedItems: deletedItems,
-                              insertedItems: insertedItems))
-      }
-      if !reloadedItems.isEmpty {
-        updates.append(.reloadItems(reloadedItems))
-      }
-      return updates
+    if !deletedSections.isEmpty || !insertedSections.isEmpty
+        || !deletedItems.isEmpty || !insertedItems.isEmpty {
+      updates.append(.batch(deletedSections: deletedSections,
+                            insertedSections: insertedSections,
+                            deletedItems: deletedItems,
+                            insertedItems: insertedItems))
+    }
+    if !reloadedItems.isEmpty {
+      updates.append(.reloadItems(reloadedItems))
+    }
+    return updates
   }
 }
 
 // MARK: - TrackerRecordStoreDelegate
 extension TrackersListViewModel: TrackerRecordStoreDelegate {
   func trackerRecordStoreDidUpdate() {
-    // TODO: Пока не уверен, что нужно, так как не хочется перерисовывать всю коллекцию
   }
 }
 
 // MARK: - TrackerCategoryStoreDelegate
 extension TrackersListViewModel: TrackerCategoryStoreDelegate {
   func trackerCategoryStoreDidUpdate() {
-    // TODO: Скорее всегго понадоиться при удалении категории
   }
 }
 
@@ -330,5 +369,23 @@ extension TrackersListViewModel: TrackersListDelegate {
     } catch {
       assertionFailure("Не удалось сохранить трекер: \(error)")
     }
+  }
+}
+
+// MARK: - FilteredDelegate
+extension TrackersListViewModel: FilteredDelegate {
+  func filterTrackers(filterOption: FilterOption = .showAllTrackers) {
+    switch filterOption {
+      case .showAllTrackers:
+        isFilter = false
+      case .showTodayTrackers:
+        isFilter = false
+        currentDate = Date()
+      case .showComplitedTrackers:
+        isFilter = true
+      case .showUncomplitedTrackers:
+        isFilter = true
+    }
+    updateVisibleCategories()
   }
 }

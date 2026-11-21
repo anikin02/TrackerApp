@@ -18,10 +18,12 @@ final class TrackersListViewController: UIViewController {
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
     return collectionView
   }()
+  private let filterButton: UIButton = .init()
   
   // MARK: - Private Properties
   private let viewModel: TrackersListViewModel
   
+  // MARK: - Init
   init(viewModel: TrackersListViewModel = .init()) {
     self.viewModel = viewModel
     
@@ -43,10 +45,13 @@ final class TrackersListViewController: UIViewController {
   // MARK: - Private Methods
   private func bindViewModel() {
     viewModel.onEmptyStateChange = { [weak self] isEmpty in
+      guard let self else { return }
       if isEmpty {
-        self?.showEmptyState()
+        self.showEmptyState()
+        self.filterButton.isHidden = !self.viewModel.isFilter
       } else {
-        self?.hideEmptyState()
+        self.hideEmptyState()
+        self.filterButton.isHidden = false
       }
     }
     viewModel.onUpdate = { [weak self] update in
@@ -58,6 +63,7 @@ final class TrackersListViewController: UIViewController {
     switch update {
       case .reload:
         collectionView.reloadData()
+        dateFilterPicker.date = viewModel.currentDate
       case let .batch(
         deletedSections,
         insertedSections,
@@ -156,6 +162,7 @@ final class TrackersListViewController: UIViewController {
     configureNavigationBar()
     configureCollection()
     configureEmptyView()
+    configureFilterButton()
   }
   
   private func configureEmptyView() {
@@ -197,10 +204,12 @@ final class TrackersListViewController: UIViewController {
     collectionView.dataSource = self
     collectionView.contentInsetAdjustmentBehavior = .never
     collectionView.allowsMultipleSelection = false
-    collectionView.clipsToBounds = false
+    collectionView.clipsToBounds = true
+    
+    collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 100, right: 0)
+    collectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 100, right: 0)
     
     view.addSubview(collectionView)
-    
     
     NSLayoutConstraint.activate([
       collectionView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 18),
@@ -210,10 +219,38 @@ final class TrackersListViewController: UIViewController {
     ])
   }
   
+  private func configureFilterButton() {
+    filterButton.translatesAutoresizingMaskIntoConstraints = false
+    filterButton.setTitle("Фильтры", for: .normal)
+    filterButton.setTitleColor(.white, for: .normal)
+    filterButton.backgroundColor = .blueYP
+    filterButton.addTarget(self, action: #selector(filterButtonTapped), for: .touchUpInside)
+    filterButton.layer.cornerRadius = 16
+    filterButton.layer.masksToBounds = true
+    
+    view.addSubview(filterButton)
+    
+    NSLayoutConstraint.activate([
+      filterButton.heightAnchor.constraint(equalToConstant: 50),
+      filterButton.widthAnchor.constraint(equalToConstant: 114),
+      
+      filterButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+      filterButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+    ])
+  }
+  
   // MARK: - Actions
   @objc private func addTrackerTapped() {
     let viewController = TrackerTypeSelectionViewController()
     viewController.delegate = viewModel
+    let navController = UINavigationController(rootViewController: viewController)
+    navController.modalPresentationStyle = .pageSheet
+    present(navController, animated: true)
+  }
+  
+  @objc private func filterButtonTapped() {
+    let viewModel = FilterViewModel(delegate: self.viewModel)
+    let viewController = FilterViewController(viewModel: viewModel)
     let navController = UINavigationController(rootViewController: viewController)
     navController.modalPresentationStyle = .pageSheet
     present(navController, animated: true)
