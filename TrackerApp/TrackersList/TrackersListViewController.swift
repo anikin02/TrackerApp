@@ -82,7 +82,7 @@ final class TrackersListViewController: UIViewController {
         for position in items {
           guard let cell = collectionView.cellForItem(at: indexPath(for: position))
                   as? TrackerViewCell else { continue }
-          cell.updateCompletion(with: viewModel.cellModel(position: position))
+          cell.configure(with: viewModel.cellModel(position: position))
         }
     }
   }
@@ -301,7 +301,9 @@ extension TrackersListViewController: UICollectionViewDelegate {
         self?.viewModel.didTapPinnedTracker(on: position)
       }
       let edit = UIAction(title: "Редактировать") { _ in
-        
+        guard let self else { return }
+        self.showEditorViewController(tracker: self.viewModel.getTracker(at: position),
+                                      category: self.viewModel.getCategory(at: position))
       }
       let delete = UIAction(title: "Удалить", attributes: .destructive) { _ in
         self?.viewModel.didTapDeletedTracker(at: position)
@@ -326,6 +328,18 @@ extension TrackersListViewController: UICollectionViewDelegate {
     parameters.backgroundColor = .clear
     parameters.visiblePath = UIBezierPath(roundedRect: view.bounds, cornerRadius: 16)
     return UITargetedPreview(view: view, parameters: parameters)
+  }
+  
+  private func showEditorViewController(tracker: Tracker, category: String) {
+    let editorViewModel = TrackerEditorViewModel(isRegularTracker: tracker.isRegular,
+                                                 titleView: "Редактирование привычки",
+                                                 oldTracker: tracker,
+                                                 oldCategory: category)
+    editorViewModel.delegate = viewModel
+    let editorViewController = TrackerEditorViewController(viewModel: editorViewModel)
+    let navController = UINavigationController(rootViewController: editorViewController)
+    navController.modalPresentationStyle = .pageSheet
+    present(navController, animated: true)
   }
 }
 

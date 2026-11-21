@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Tracker {
+struct Tracker: Equatable {
   let id: UUID
   let name: String
   let hexColor: String

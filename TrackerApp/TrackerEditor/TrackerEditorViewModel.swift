@@ -29,15 +29,17 @@ final class TrackerEditorViewModel {
   var onOptionUpdate: Binding<Int>?
   var onItemsUpdate: Binding<[ItemPosition]>?
   var onRoute: Binding<NewTrackerRoute>?
-  var onTrackerCreated: Binding<Void>?
+  var onTrackerSaved: Binding<Void>?
   
   // MARK: - Properties
   weak var delegate: TrackersListDelegate?
   let titleView: String
   let errorText: String
+  let titleSaveButton: String
   let columnsCount: CGFloat = 6
   var numberOfOptions: Int { options.count }
   var numberOfSections: Int { EmojiColorSection.allCases.count }
+  var initialTitle: String? { editingTracker?.name }
   
   // MARK: Private Properties
   private enum Option {
@@ -74,7 +76,7 @@ final class TrackerEditorViewModel {
       }
     }
   }
-  private let isRegularNewTracker: Bool
+  private let isRegularTracker: Bool
   private var options: [Option] = []
   private let maxLengthTitle = 38
   private var selectedSchedule: Set<WeekDay> = []
@@ -83,11 +85,21 @@ final class TrackerEditorViewModel {
   private var selectedColorIndex: Int?
   private var textTitle: String?
   
+  private let editingTracker: Tracker?
+  
   // MARK: - Init
-  init(isRegularNewTracker: Bool = true, titleView: String) {
-    self.isRegularNewTracker = isRegularNewTracker
+  init(isRegularTracker: Bool = true, titleView: String, oldTracker: Tracker? = nil, oldCategory: String? = nil) {
+    self.isRegularTracker = isRegularTracker
     self.titleView = titleView
+    self.editingTracker = oldTracker
     errorText = "Ограничение \(maxLengthTitle) символов"
+    
+    if let oldTracker, let oldCategory {
+      titleSaveButton = "Сохранить"
+      configureEditView(tracker: oldTracker, category: oldCategory)
+    } else {
+      titleSaveButton = "Создать"
+    }
     configureTrackerType()
   }
   
@@ -111,7 +123,7 @@ final class TrackerEditorViewModel {
     titleDidChange("")
   }
   
-  func didTappedCreateButton() {
+  func didTappedSaveButton() {
     guard let selectedCategory,
           let textTitle, !textTitle.isEmpty,
           let selectedEmojiIndex,
@@ -120,15 +132,21 @@ final class TrackerEditorViewModel {
     let emoji = EmojiColorSection.emoji.items[selectedEmojiIndex]
     let color = EmojiColorSection.color.items[selectedColorIndex]
     
-    let tracker = Tracker(id: UUID(),
+    let tracker = Tracker(id: editingTracker?.id ?? UUID(),
                           name: textTitle,
                           hexColor: color,
                           emoji: emoji,
                           schedule: selectedSchedule,
-                          isRegular: isRegularNewTracker)
+                          isRegular: isRegularTracker,
+                          isPinned: editingTracker?.isPinned ?? false)
     
-    delegate?.addNewTracker(tracker: tracker, category: selectedCategory)
-    onTrackerCreated?(())
+    if let _ = editingTracker {
+      delegate?.updateTracker(updateTracker: tracker, in: selectedCategory)
+    } else {
+      delegate?.addNewTracker(tracker: tracker, category: selectedCategory)
+    }
+
+    onTrackerSaved?(())
   }
   
   func numberOfItems(in section: Int) -> Int {
@@ -201,12 +219,21 @@ final class TrackerEditorViewModel {
   }
   
   private func configureTrackerType() {
-    if isRegularNewTracker {
+    if isRegularTracker {
       options = [.category, .schedule]
     } else {
       options = [.category]
       selectedSchedule = Set(WeekDay.allCases)
     }
+  }
+  
+  private func configureEditView(tracker: Tracker, category: String) {
+    selectedSchedule = tracker.schedule
+    selectedCategory = category
+    textTitle = tracker.name
+    selectedEmojiIndex = EmojiColorSection.emoji.items.firstIndex(of: tracker.emoji)
+    selectedColorIndex = EmojiColorSection.color.items.firstIndex(of: tracker.hexColor)
+    updateCreateButtonState()
   }
   
   private func updateCreateButtonState() {

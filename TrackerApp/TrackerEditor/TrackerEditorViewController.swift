@@ -21,10 +21,10 @@ final class TrackerEditorViewController: UIViewController {
     return collectionView
   }()
   private var emojiColorColletionHeightConstraint: NSLayoutConstraint?
-  private let createButton: UIButton = .init()
+  private let saveButton: UIButton = .init()
   private let cancelButton: UIButton = .init()
   private let stackButtons: UIStackView = .init()
-  private let viewModel: NewTrackerViewModel
+  private let viewModel: TrackerEditorViewModel
   
   init(viewModel: TrackerEditorViewModel) {
     self.viewModel = viewModel
@@ -67,7 +67,7 @@ final class TrackerEditorViewController: UIViewController {
     viewModel.onRoute = { [weak self] route in
       self?.present(route)
     }
-    viewModel.onTrackerCreated = { [weak self] _ in
+    viewModel.onTrackerSaved = { [weak self] _ in
       self?.view.window?.rootViewController?.dismiss(animated: true)
     }
   }
@@ -143,6 +143,8 @@ final class TrackerEditorViewController: UIViewController {
     titleField.clearButtonMode = .whileEditing
     titleField.returnKeyType = .done
     titleField.delegate = self
+    
+    titleField.text = viewModel.initialTitle
     
     titleField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
     titleField.leftViewMode = .always
@@ -221,14 +223,14 @@ final class TrackerEditorViewController: UIViewController {
     ])
   }
   
-  private func configureCreateButton() {
-    createButton.setTitle("Создать", for: .normal)
-    createButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
-    createButton.setTitleColor(.whiteYP, for: .normal)
-    createButton.layer.cornerRadius = 16
-    createButton.layer.masksToBounds = true
+  private func configureSaveButton() {
+    saveButton.setTitle(viewModel.titleSaveButton, for: .normal)
+    saveButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+    saveButton.setTitleColor(.whiteYP, for: .normal)
+    saveButton.layer.cornerRadius = 16
+    saveButton.layer.masksToBounds = true
     
-    createButton.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
+    saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
     disableCreateButton()
   }
   
@@ -248,7 +250,7 @@ final class TrackerEditorViewController: UIViewController {
   
   private func configureStackButtons() {
     configureCancelButton()
-    configureCreateButton()
+    configureSaveButton()
     
     stackButtons.translatesAutoresizingMaskIntoConstraints = false
     stackButtons.axis = .horizontal
@@ -256,7 +258,7 @@ final class TrackerEditorViewController: UIViewController {
     stackButtons.distribution = .fillEqually
     
     stackButtons.addArrangedSubview(cancelButton)
-    stackButtons.addArrangedSubview(createButton)
+    stackButtons.addArrangedSubview(saveButton)
     
     NSLayoutConstraint.activate([
       stackButtons.topAnchor.constraint(equalTo: emojiColorColletion.bottomAnchor, constant: 40),
@@ -268,8 +270,8 @@ final class TrackerEditorViewController: UIViewController {
   }
   
   // MARK: - Actions
-  @objc private func createButtonTapped() {
-    viewModel.didTappedCreateButton()
+  @objc private func saveButtonTapped() {
+    viewModel.didTappedSaveButton()
   }
   
   @objc private func cancelButtonTapped() {
@@ -290,13 +292,13 @@ final class TrackerEditorViewController: UIViewController {
   }
   
   private func enableCreateButton() {
-    createButton.backgroundColor = .blackYP
-    createButton.isEnabled = true
+    saveButton.backgroundColor = .blackYP
+    saveButton.isEnabled = true
   }
   
   private func disableCreateButton() {
-    createButton.backgroundColor = .grayYP
-    createButton.isEnabled = false
+    saveButton.backgroundColor = .grayYP
+    saveButton.isEnabled = false
   }
   
   private func calculateEmojiColorCollectionHeight(for width: CGFloat) -> CGFloat {

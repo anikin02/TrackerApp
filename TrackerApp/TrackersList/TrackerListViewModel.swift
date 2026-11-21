@@ -9,7 +9,7 @@ import Foundation
 
 protocol TrackersListDelegate: AnyObject {
   func addNewTracker(tracker: Tracker, category: String)
-  func changeTracker(newTracker: Tracker, category: String)
+  func updateTracker(updateTracker: Tracker, in: String)
 }
 
 enum TrackersUpdate {
@@ -106,12 +106,20 @@ final class TrackersListViewModel {
     }
   }
   
+  func getTracker(at position: ItemPosition) -> Tracker {
+    visibleCategories[position.section].trackers[position.item]
+  }
+  
+  func getCategory(at position: ItemPosition) -> String {
+    let id = visibleCategories[position.section].trackers[position.item].id
+    return categories.first { $0.trackers.contains { $0.id == id } }?.title ?? ""
+  }
+  
   func isAlreadyPinned(at position: ItemPosition) -> Bool {
     visibleCategories[position.section].trackers[position.item].isPinned
   }
   
   func didTapPinnedTracker(on position: ItemPosition) {
-    let category = visibleCategories[position.section].title
     let oldTracker = visibleCategories[position.section].trackers[position.item]
     let updateTracker = Tracker(id: oldTracker.id, name: oldTracker.name, hexColor: oldTracker.hexColor, emoji: oldTracker.emoji, schedule: oldTracker.schedule, isPinned: !oldTracker.isPinned)
     do {
@@ -119,10 +127,6 @@ final class TrackersListViewModel {
     } catch {
       assertionFailure("Не удалось сохранить трекер: \(error)")
     }
-  }
-  
-  func didTapEditedTracker(on position: ItemPosition, newTracker: Tracker) {
-    
   }
   
   func didTapDeletedTracker(at position: ItemPosition) {
@@ -214,15 +218,15 @@ extension TrackersListViewModel: TrackerStoreDelegate {
     
     onEmptyStateChange?(visibleCategories.isEmpty)
     
-    let update = makeUpdate(
+    let updates = makeUpdates(
       old: oldVisible,
       new: newVisible
     )
     
-    onUpdate?(update)
+    updates.forEach { onUpdate?($0) }
   }
   
-  private func makeUpdate(old: [TrackerCategory], new: [TrackerCategory]) -> TrackersUpdate {
+  private func makeUpdates(old: [TrackerCategory], new: [TrackerCategory]) -> [TrackersUpdate] {
     let oldTitles = old.map(\.title)
     let newTitles = new.map(\.title)
     
@@ -238,26 +242,35 @@ extension TrackersListViewModel: TrackerStoreDelegate {
     let newCommon = newTitles.filter { oldTitles.contains($0) }
     
     guard oldCommon == newCommon else {
-      return .reload
+      return [.reload]
     }
     
     var deletedItems: [ItemPosition] = []
     var insertedItems: [ItemPosition] = []
+    var reloadedItems: [ItemPosition] = []
     
     for (section, category) in old.enumerated() {
       guard let newSection = newTitles.firstIndex(of: category.title) else {
         continue
       }
       
-      let newCategory = new[newSection]
+      let newTrackers = new[newSection].trackers
+      let newIDs = Set(newTrackers.map(\.id))
+      let oldIDs = Set(category.trackers.map(\.id))
       
-      let newIDs = Set(newCategory.trackers.map(\.id))
+      let oldCommonIDs = category.trackers.map(\.id).filter { newIDs.contains($0) }
+      let newCommonIDs = newTrackers.map(\.id).filter { oldIDs.contains($0) }
+      guard oldCommonIDs == newCommonIDs else {
+        return [.reload]
+      }
       
       for (item, tracker) in category.trackers.enumerated() {
-        if !newIDs.contains(tracker.id) {
-          deletedItems.append(
-            ItemPosition(section: section, item: item)
-          )
+        if let updated = newTrackers.first(where: { $0.id == tracker.id }) {
+          if updated != tracker {
+            reloadedItems.append(ItemPosition(section: section, item: item))
+          }
+        } else {
+          deletedItems.append(ItemPosition(section: section, item: item))
         }
       }
     }
@@ -266,26 +279,24 @@ extension TrackersListViewModel: TrackerStoreDelegate {
       guard let oldSection = oldTitles.firstIndex(of: category.title) else {
         continue
       }
-      
-      let oldCategory = old[oldSection]
-      
-      let oldIDs = Set(oldCategory.trackers.map(\.id))
-      
-      for (item, tracker) in category.trackers.enumerated() {
-        if !oldIDs.contains(tracker.id) {
-          insertedItems.append(
-            ItemPosition(section: section, item: item)
-          )
-        }
+      let oldIDs = Set(old[oldSection].trackers.map(\.id))
+      for (item, tracker) in category.trackers.enumerated() where !oldIDs.contains(tracker.id) {
+        insertedItems.append(ItemPosition(section: section, item: item))
       }
     }
     
-    return .batch(
-      deletedSections: deletedSections,
-      insertedSections: insertedSections,
-      deletedItems: deletedItems,
-      insertedItems: insertedItems
-    )
+    var updates: [TrackersUpdate] = []
+      if !deletedSections.isEmpty || !insertedSections.isEmpty
+          || !deletedItems.isEmpty || !insertedItems.isEmpty {
+        updates.append(.batch(deletedSections: deletedSections,
+                              insertedSections: insertedSections,
+                              deletedItems: deletedItems,
+                              insertedItems: insertedItems))
+      }
+      if !reloadedItems.isEmpty {
+        updates.append(.reloadItems(reloadedItems))
+      }
+      return updates
   }
 }
 
@@ -305,6 +316,14 @@ extension TrackersListViewModel: TrackerCategoryStoreDelegate {
 
 // MARK: - TrackersListDelegate
 extension TrackersListViewModel: TrackersListDelegate {
+  func updateTracker(updateTracker: Tracker, in category: String) {
+    do {
+      try trackerStore.updateTracker(updateTracker, in: category)
+    } catch {
+      assertionFailure("Не удалось сохранить трекер: \(error)")
+    }
+  }
+  
   func addNewTracker(tracker: Tracker, category: String) {
     do {
       try trackerStore.addNewTracker(with: tracker, to: category)

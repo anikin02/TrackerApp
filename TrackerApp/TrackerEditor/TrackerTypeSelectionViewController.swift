@@ -84,7 +84,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
   }
   
   private func showCreationView(title: String, isRegular: Bool) {
-    let viewModel = TrackerEditorViewModel(isRegularNewTracker: isRegular, titleView: title)
+    let viewModel = TrackerEditorViewModel(isRegularTracker: isRegular, titleView: title)
     viewModel.delegate = delegate
     let viewController = TrackerEditorViewController(viewModel: viewModel)
     let navController = UINavigationController(rootViewController: viewController)
