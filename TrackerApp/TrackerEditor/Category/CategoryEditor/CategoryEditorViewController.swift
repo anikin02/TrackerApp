@@ -8,9 +8,21 @@
 import UIKit
 
 final class CategoryEditorViewController: UIViewController {
-  var isDone: ((String) -> Void)?
+  var isDone: ((String?, String) -> Void)?
   private let titleField: UITextField = .init()
   private let createButton: UIButton = .init()
+  private let oldCategoryTitle: String?
+  private let titleView: String
+  
+  init(titleView: String, oldCategoryTitle: String? = nil) {
+    self.oldCategoryTitle = oldCategoryTitle
+    self.titleView = titleView
+    super.init(nibName: nil, bundle: nil)
+  }
+  
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -20,7 +32,7 @@ final class CategoryEditorViewController: UIViewController {
   
   private func configureUI() {
     view.backgroundColor = .whiteYP
-    title = "Новая категория"
+    title = titleView
     configureTitleField()
     configureCreateButton()
   }
@@ -38,6 +50,8 @@ final class CategoryEditorViewController: UIViewController {
     )
     titleField.clearButtonMode = .whileEditing
     titleField.returnKeyType = .done
+    
+    titleField.text = oldCategoryTitle
     
     titleField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
     titleField.leftViewMode = .always
@@ -92,7 +106,7 @@ final class CategoryEditorViewController: UIViewController {
   @objc private func createButtonTapped() {
     guard let text = titleField.text else { return }
     
-    isDone?(text)
+    isDone?(oldCategoryTitle, text)
     dismiss(animated: true)
   }
 }

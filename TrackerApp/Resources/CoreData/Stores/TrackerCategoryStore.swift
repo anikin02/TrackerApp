@@ -52,6 +52,32 @@ final class TrackerCategoryStore: NSObject {
     try context.save()
   }
   
+  func updateCategory(oldTitle: String, newTitle: String) throws {
+    guard let object = try fetchCategory(title: oldTitle) else {
+      return
+    }
+
+    object.title = newTitle
+
+    try context.save()
+  }
+
+  func deleteCategory(title: String) throws {
+    guard let object = try fetchCategory(title: title) else {
+      return
+    }
+    
+    context.delete(object)
+    try context.save()
+  }
+  
+  func fetchCategory(title: String) throws -> TrackerCategoryCoreData? {
+    let request = TrackerCategoryCoreData.fetchRequest()
+    request.predicate = NSPredicate(format: "title == %@", title)
+    request.fetchLimit = 1
+    return try context.fetch(request).first
+  }
+  
   private func getTrackerCategoryModel(object: TrackerCategoryCoreData) -> TrackerCategory? {
     guard let title = object.title else { return nil }
     let trackers = (object.trackers as? Set<TrackerCoreData> ?? [])

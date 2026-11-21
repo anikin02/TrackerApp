@@ -33,6 +33,8 @@ final class TrackerStore: NSObject {
     return controller
   }()
   
+  private let categoryStore: TrackerCategoryStore = .init()
+  
   init(context: NSManagedObjectContext) {
     self.context = context
     super.init()
@@ -52,7 +54,7 @@ final class TrackerStore: NSObject {
     object.isRegular = tracker.isRegular
     object.isPinned = tracker.isPinned
     object.schedule = try? JSONEncoder().encode(tracker.schedule)
-    object.category = try fetchCategory(title: categoryTitle)
+    object.category = try categoryStore.fetchCategory(title: categoryTitle)
     
     try context.save()
   }
@@ -77,7 +79,7 @@ final class TrackerStore: NSObject {
     object.hexColor = tracker.hexColor
     object.isPinned = tracker.isPinned
     object.schedule = try? JSONEncoder().encode(tracker.schedule)
-    object.category = try fetchCategory(title: categoryTitle)
+    object.category = try categoryStore.fetchCategory(title: categoryTitle)
 
     try context.save()
   }
@@ -94,13 +96,6 @@ final class TrackerStore: NSObject {
   private func fetchTracker(id: UUID) throws -> TrackerCoreData? {
     let request = TrackerCoreData.fetchRequest()
     request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-    request.fetchLimit = 1
-    return try context.fetch(request).first
-  }
-  
-  private func fetchCategory(title: String) throws -> TrackerCategoryCoreData? {
-    let request = TrackerCategoryCoreData.fetchRequest()
-    request.predicate = NSPredicate(format: "title == %@", title)
     request.fetchLimit = 1
     return try context.fetch(request).first
   }
