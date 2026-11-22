@@ -36,6 +36,7 @@ final class TrackersListViewModel {
   // MARK: - Private Properties
   private(set) var currentDate: Date = .init()
   private(set) var isFilter: Bool = false
+  private(set) var isSearch: Bool = false
   private var searchText: String = ""
   private var categories: [TrackerCategory] = []
   private var completedTrackers: [TrackerRecord] = []
@@ -60,6 +61,7 @@ final class TrackersListViewModel {
   
   func searchTextDidChange(searchText: String) {
     self.searchText = searchText
+    isSearch = !searchText.isEmpty
     updateVisibleCategories()
   }
   

@@ -178,6 +178,11 @@ final class TrackersListViewController: UIViewController {
   }
   
   private func showEmptyState() {
+    if viewModel.isFilter || viewModel.isSearch {
+      emptyStateView.config(with: "Ничего не найдено", image: UIImage(resource: .emptySearchState))
+    } else {
+      emptyStateView.config(with: "Что будем отслеживать?")
+    }
     emptyStateView.isHidden = false
   }
   
