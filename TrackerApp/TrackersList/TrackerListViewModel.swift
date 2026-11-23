@@ -280,6 +280,7 @@ extension TrackersListViewModel: TrackerStoreDelegate {
       old: oldVisible,
       new: newVisible
     )
+    completedTrackers = trackerRecordStore.records
     updateStatistics()
     updates.forEach { onUpdate?($0) }
   }
@@ -296,7 +297,6 @@ extension TrackersListViewModel: TrackerStoreDelegate {
       oldTitles.contains(title) ? nil : index
     }
 
-    // Порядок общих секций изменился: точечный diff неприменим
     guard oldTitles.filter(newTitles.contains) == newTitles.filter(oldTitles.contains) else {
       return [.reload]
     }
@@ -305,7 +305,6 @@ extension TrackersListViewModel: TrackerStoreDelegate {
     var insertedItems: [ItemPosition] = []
     var reloadedItems: [ItemPosition] = []
 
-    // Удаления: индексы по СТАРЫМ данным
     for (oldSection, category) in old.enumerated() {
       guard let newSection = newTitles.firstIndex(of: category.title) else { continue }
 
@@ -313,7 +312,6 @@ extension TrackersListViewModel: TrackerStoreDelegate {
       let newIDs = Set(newTrackers.map(\.id))
       let oldIDs = Set(category.trackers.map(\.id))
 
-      // Порядок общих трекеров внутри секции изменился
       guard category.trackers.map(\.id).filter(newIDs.contains)
               == newTrackers.map(\.id).filter(oldIDs.contains) else {
         return [.reload]
@@ -324,7 +322,6 @@ extension TrackersListViewModel: TrackerStoreDelegate {
       }
     }
 
-    // Вставки и изменения: индексы по НОВЫМ данным
     for (newSection, category) in new.enumerated() {
       guard let oldSection = oldTitles.firstIndex(of: category.title) else { continue }
 

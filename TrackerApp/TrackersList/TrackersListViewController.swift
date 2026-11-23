@@ -348,7 +348,10 @@ extension TrackersListViewController: UICollectionViewDelegate {
                                       category: self.viewModel.getCategory(at: position))
       }
       let delete = UIAction(title: "Удалить", attributes: .destructive) { _ in
-        self?.viewModel.didTapDeletedTracker(at: position)
+        guard let self else { return }
+        DeleteConfirmationAlert.present(on: self, title: "Уверены что хотите удалить трекер?") { [weak self] in
+          self?.viewModel.didTapDeletedTracker(at: position)
+        }
       }
       return UIMenu(children: [pin, edit, delete])
     }

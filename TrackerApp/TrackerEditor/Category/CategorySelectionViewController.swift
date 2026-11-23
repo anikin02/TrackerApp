@@ -220,7 +220,10 @@ extension CategorySelectionViewController: UITableViewDelegate {
         self.showEditorCategory(titleView: "Редактирование категории", oldCategoryTitle: category.title)
       }
       let delete = UIAction(title: "Удалить", attributes: .destructive) { _ in
-        self?.viewModel.deleteCategory(at: indexPath.row)
+        guard let self else { return }
+        DeleteConfirmationAlert.present(on: self, title: "Эта категория точно не нужна?") { [weak self] in
+          self?.viewModel.deleteCategory(at: indexPath.row)
+        }
       }
       return UIMenu(children: [edit, delete])
     }
