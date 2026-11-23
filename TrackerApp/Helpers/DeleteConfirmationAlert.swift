@@ -11,8 +11,8 @@ enum DeleteConfirmationAlert {
   static func present(
     on viewController: UIViewController,
     title: String,
-    deleteTitle: String = "Удалить",
-    cancelTitle: String = "Отменить",
+    deleteTitle: String = NSLocalizedString("deleteButtonTitle", comment: ""),
+    cancelTitle: String = NSLocalizedString("cancelButtonTitle", comment: ""),
     onConfirm: @escaping () -> Void
   ) {
     let alert = UIAlertController(

@@ -14,10 +14,12 @@ final class OnboardingViewController: UIPageViewController {
   
   private lazy var slideViewControllers: [UIViewController] = {
     let firstSlide = SlideViewController()
-    firstSlide.configure(title: "Отслеживайте только то, что хотите", cover: UIImage(resource: .firstSlide))
+    let firstOnboardingSlideTitle = NSLocalizedString("firstOnboardingSlideTitle", comment: "")
+    firstSlide.configure(title: firstOnboardingSlideTitle, cover: UIImage(resource: .firstSlide))
     
+    let secondOnboardingSlideTitle = NSLocalizedString("secondOnboardingSlideTitle", comment: "")
     let secondSlide = SlideViewController()
-    secondSlide.configure(title: "Даже если это не литры воды и йога", cover: UIImage(resource: .secondSlide))
+    secondSlide.configure(title: secondOnboardingSlideTitle, cover: UIImage(resource: .secondSlide))
     
     return [firstSlide, secondSlide]
   }()
@@ -56,7 +58,8 @@ final class OnboardingViewController: UIPageViewController {
   
   private func configureTrackersScreenButton() {
     trackersScreenButton.translatesAutoresizingMaskIntoConstraints = false
-    trackersScreenButton.setTitle("Вот это технологии!", for: .normal)
+    let buttonOnboardingTitle = NSLocalizedString("buttonOnboardingTitle", comment: "")
+    trackersScreenButton.setTitle(buttonOnboardingTitle, for: .normal)
     trackersScreenButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
     trackersScreenButton.setTitleColor(.whiteYP, for: .normal)
     trackersScreenButton.backgroundColor = .blackYP

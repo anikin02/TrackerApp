@@ -137,7 +137,7 @@ final class TrackerEditorViewController: UIViewController {
     titleField.font = .systemFont(ofSize: 17, weight: .regular)
     titleField.textColor = .blackYP
     titleField.attributedPlaceholder = NSAttributedString(
-      string: "Введите название трекера",
+      string: NSLocalizedString("placeholderTrackerName", comment: ""),
       attributes: [.foregroundColor: UIColor.grayYP]
     )
     titleField.clearButtonMode = .whileEditing
@@ -235,7 +235,8 @@ final class TrackerEditorViewController: UIViewController {
   }
   
   private func configureCancelButton() {
-    cancelButton.setTitle("Отменить", for: .normal)
+    let cancelTrackerButton = NSLocalizedString("cancelTrackerButton", comment: "")
+    cancelButton.setTitle(cancelTrackerButton, for: .normal)
     cancelButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
     cancelButton.setTitleColor(.redYP, for: .normal)
     cancelButton.backgroundColor = .clear

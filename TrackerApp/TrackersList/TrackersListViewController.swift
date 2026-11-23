@@ -130,7 +130,8 @@ final class TrackersListViewController: UIViewController {
   
   private func configureTitle() {
     titleLabel.translatesAutoresizingMaskIntoConstraints = false
-    titleLabel.text = "Трекеры"
+    let trackersListTitle = NSLocalizedString("trackersListTitle", comment: "")
+    titleLabel.text = trackersListTitle
     titleLabel.font = UIFont.systemFont(ofSize: 34, weight: .bold)
     titleLabel.textColor = .blackYP
     view.addSubview(titleLabel)
@@ -144,7 +145,8 @@ final class TrackersListViewController: UIViewController {
   
   private func configureSearchBar() {
     searchBar.translatesAutoresizingMaskIntoConstraints = false
-    searchBar.placeholder = "Поиск"
+    let searchPlaceholder = NSLocalizedString("searchPlaceholder", comment: "")
+    searchBar.placeholder = searchPlaceholder
     searchBar.searchBarStyle = .minimal
     searchBar.delegate = self
     
@@ -167,7 +169,8 @@ final class TrackersListViewController: UIViewController {
   
   private func configureEmptyView() {
     emptyStateView.translatesAutoresizingMaskIntoConstraints = false
-    emptyStateView.config(with: "Что будем отслеживать?")
+    let emptyTrackersListTitle = NSLocalizedString("emptyTrackersListTitle", comment: "")
+    emptyStateView.config(with: emptyTrackersListTitle)
     view.addSubview(emptyStateView)
     NSLayoutConstraint.activate([
       emptyStateView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -179,9 +182,11 @@ final class TrackersListViewController: UIViewController {
   
   private func showEmptyState() {
     if viewModel.isFilter || viewModel.isSearch {
-      emptyStateView.config(with: "Ничего не найдено", image: UIImage(resource: .emptySearchState))
+      let emptySearchTitle = NSLocalizedString("emptySearchTitle", comment: "")
+      emptyStateView.config(with: emptySearchTitle, image: UIImage(resource: .emptySearchState))
     } else {
-      emptyStateView.config(with: "Что будем отслеживать?")
+      let emptyTrackersListTitle = NSLocalizedString("emptyTrackersListTitle", comment: "")
+      emptyStateView.config(with: emptyTrackersListTitle)
     }
     emptyStateView.isHidden = false
   }
@@ -226,7 +231,8 @@ final class TrackersListViewController: UIViewController {
   
   private func configureFilterButton() {
     filterButton.translatesAutoresizingMaskIntoConstraints = false
-    filterButton.setTitle("Фильтры", for: .normal)
+    let filtersButtonTitle = NSLocalizedString("filtersButtonTitle", comment: "")
+    filterButton.setTitle(filtersButtonTitle, for: .normal)
     filterButton.setTitleColor(.white, for: .normal)
     filterButton.backgroundColor = .blueYP
     filterButton.addTarget(self, action: #selector(filterButtonTapped), for: .touchUpInside)
@@ -339,17 +345,23 @@ extension TrackersListViewController: UICollectionViewDelegate {
     let isAlreadyPinned = viewModel.isAlreadyPinned(at: position)
     
     return UIContextMenuConfiguration(identifier: indexPath as NSCopying, previewProvider: nil) { [weak self] _ in
-      let pin = UIAction(title: isAlreadyPinned ? "Открепить" : "Закрепить") { _ in
+      let pinAction = NSLocalizedString("pinAction", comment: "")
+      let unpinAction = NSLocalizedString("unpinAction", comment: "")
+      let editAction = NSLocalizedString("editAction", comment: "")
+      let deleteAction = NSLocalizedString("deleteAction", comment: "")
+      let deleteTrackerConfirmationTitle = NSLocalizedString("deleteTrackerConfirmationTitle", comment: "")
+      
+      let pin = UIAction(title: isAlreadyPinned ? unpinAction : pinAction) { _ in
         self?.viewModel.didTapPinnedTracker(on: position)
       }
-      let edit = UIAction(title: "Редактировать") { _ in
+      let edit = UIAction(title: editAction) { _ in
         guard let self else { return }
         self.showEditorViewController(tracker: self.viewModel.getTracker(at: position),
                                       category: self.viewModel.getCategory(at: position))
       }
-      let delete = UIAction(title: "Удалить", attributes: .destructive) { _ in
+      let delete = UIAction(title: deleteAction, attributes: .destructive) { _ in
         guard let self else { return }
-        DeleteConfirmationAlert.present(on: self, title: "Уверены что хотите удалить трекер?") { [weak self] in
+        DeleteConfirmationAlert.present(on: self, title: deleteTrackerConfirmationTitle) { [weak self] in
           self?.viewModel.didTapDeletedTracker(at: position)
         }
       }
@@ -376,8 +388,9 @@ extension TrackersListViewController: UICollectionViewDelegate {
   }
   
   private func showEditorViewController(tracker: Tracker, category: String) {
+    let trackerEditTitle = NSLocalizedString("trackerEditTitle", comment: "")
     let editorViewModel = TrackerEditorViewModel(isRegularTracker: tracker.isRegular,
-                                                 titleView: "Редактирование привычки",
+                                                 titleView: trackerEditTitle,
                                                  oldTracker: tracker,
                                                  oldCategory: category)
     editorViewModel.delegate = viewModel

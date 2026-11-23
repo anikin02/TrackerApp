@@ -190,7 +190,8 @@ final class TrackersListViewModel {
     }
     
     if !pinnedTrackers.isEmpty {
-      let pinnedCategory = TrackerCategory(title: "Закрепленные", trackers: pinnedTrackers)
+      let pinnedCategoryTitle = NSLocalizedString("pinnedCategoryTitle", comment: "")
+      let pinnedCategory = TrackerCategory(title: pinnedCategoryTitle, trackers: pinnedTrackers)
       regularCategories.insert(pinnedCategory, at: 0)
     }
     

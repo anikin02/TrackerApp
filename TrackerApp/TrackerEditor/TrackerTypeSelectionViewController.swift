@@ -21,7 +21,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
   
   private func configureUI() {
     view.backgroundColor = .whiteYP
-    title = "Создание трекера"
+    title = NSLocalizedString("trackerTypeSelectionTitle", comment: "")
     
     configureStack()
   }
@@ -45,7 +45,8 @@ final class TrackerTypeSelectionViewController: UIViewController {
   
   private func configureCreateRegularButton() {
     createRegularButton.translatesAutoresizingMaskIntoConstraints = false
-    createRegularButton.setTitle("Привычка", for: .normal)
+    let title = NSLocalizedString("regularTrackerButtonTitle", comment: "")
+    createRegularButton.setTitle(title, for: .normal)
     createRegularButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
     createRegularButton.backgroundColor = .blackYP
     createRegularButton.layer.cornerRadius = 16
@@ -61,7 +62,8 @@ final class TrackerTypeSelectionViewController: UIViewController {
   
   private func configureCreateUnregularButton() {
     createUnregularButton.translatesAutoresizingMaskIntoConstraints = false
-    createUnregularButton.setTitle("Нерегулярное событие", for: .normal)
+    let title = NSLocalizedString("unregularTrackerButtonTitle", comment: "")
+    createUnregularButton.setTitle(title, for: .normal)
     createUnregularButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
     createUnregularButton.backgroundColor = .blackYP
     createUnregularButton.layer.cornerRadius = 16
@@ -76,11 +78,13 @@ final class TrackerTypeSelectionViewController: UIViewController {
   }
   
   @objc private func createRegularButtonTapped() {
-    showCreationView(title: "Новая привычка", isRegular: true)
+    let title = NSLocalizedString("regularTrackerCreationTitle", comment: "")
+    showCreationView(title: title, isRegular: true)
   }
   
   @objc private func createUnregularButtonTapped() {
-    showCreationView(title: "Новое нерегулярное событие", isRegular: false)
+    let title = NSLocalizedString("unregularTrackerCreationTitle", comment: "")
+    showCreationView(title: title, isRegular: false)
   }
   
   private func showCreationView(title: String, isRegular: Bool) {

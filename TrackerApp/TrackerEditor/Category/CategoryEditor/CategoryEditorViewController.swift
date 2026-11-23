@@ -44,8 +44,9 @@ final class CategoryEditorViewController: UIViewController {
     titleField.layer.masksToBounds = true
     titleField.font = .systemFont(ofSize: 17, weight: .regular)
     titleField.textColor = .blackYP
+    let placeholderCategoryName = NSLocalizedString("placeholderCategoryName", comment: "")
     titleField.attributedPlaceholder = NSAttributedString(
-      string: "Введите название категории",
+      string: placeholderCategoryName,
       attributes: [.foregroundColor: UIColor.grayYP]
     )
     titleField.clearButtonMode = .whileEditing
@@ -70,7 +71,8 @@ final class CategoryEditorViewController: UIViewController {
   
   private func configureCreateButton() {
     createButton.translatesAutoresizingMaskIntoConstraints = false
-    createButton.setTitle("Готово", for: .normal)
+    let categoryEditorDoneButton = NSLocalizedString("categoryEditorDoneButton", comment: "")
+    createButton.setTitle(categoryEditorDoneButton, for: .normal)
     createButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
     createButton.setTitleColor(.whiteYP, for: .normal)
     createButton.layer.cornerRadius = 16

@@ -1,0 +1,99 @@
+/* 
+  Localizable.strings
+  TrackerApp
+
+  Created by Данил on 23/11/2026.
+  
+*/
+
+// MARK: - Onboarding
+firstOnboardingSlideTitle = "Отслеживайте только то, что хотите";
+secondOnboardingSlideTitle = "Даже если это не литры воды и йога";
+buttonOnboardingTitle = "Вот это технологии!";
+buttonOnboardingTitle = "Вот это технологии!";
+
+// MARK: - TrackersList
+trackersListTitle = "Трекеры";
+filtersButtonTitle = "Фильтры";
+pinnedCategoryTitle = "Закрепленные";
+searchPlaceholder = "Поиск";
+deleteTrackerConfirmationTitle = "Уверены что хотите удалить трекер?";
+
+// MARK: - Context Menu
+pinAction = "Закрепить";
+unpinAction = "Открепить";
+editAction = "Редактировать";
+deleteAction = "Удалить";
+
+// MARK: - Statistics
+statisticsTitle = "Статистика";
+completedTrackersStatTitle = "Трекеров завершено";
+bestPeriodStatTitle = "Лучший период";
+perfectDaysStatTitle = "Идеальные дни";
+averageValueStatTitle = "Среднее значение";
+
+// MARK: - TrackerTypeSelection
+trackerTypeSelectionTitle = "Создание трекера";
+unregularTrackerButtonTitle = "Нерегулярное событие";
+regularTrackerButtonTitle = "Привычка";
+
+// MARK: - TrackerEditor
+regularTrackerCreationTitle = "Новая привычка";
+unregularTrackerCreationTitle = "Новое нерегулярное событие";
+trackerEditTitle = "Редактирование привычки";
+placeholderTrackerName = "Введите название трекера";
+categoryOption = "Категория";
+scheduleOption = "Расписание";
+colorOption = "Цвет";
+createTrackerButton = "Создать";
+editTrackerButton = "Сохранить";
+cancelTrackerButton = "Отменить";
+
+// MARK: - CategoryEditor
+categoryCreationTitle = "Новая категория";
+categoryEditTitle = "Редактирование категории";
+placeholderCategoryName = "Введите название категории";
+categoryEditorDoneButton = "Готово";
+
+// MARK: - Empty States
+emptyTrackersListTitle = "Что будем отслеживать?";
+emptySearchTitle = "Ничего не найдено";
+emptyStatisticsTitle = "Анализировать пока нечего";
+emptyCategoriesTitle = "Привычки и события можно\nобъединить по смыслу";
+
+// MARK: - Filters
+allTrackersFilterTitle = "Все трекеры";
+todayTrackersFilterTitle = "Трекеры на сегодня";
+completedTrackersFilterTitle = "Завершенные";
+uncompletedTrackersFilterTitle = "Не завершенные";
+
+// MARK: - Schedule
+scheduleSelectionTitle = "Расписание";
+everyDayTitle = "Каждый день";
+doneButtonTitle = "Готово";
+
+// MARK: - WeekDays
+mondayTitle = "Понедельник";
+tuesdayTitle = "Вторник";
+wednesdayTitle = "Среда";
+thursdayTitle = "Четверг";
+fridayTitle = "Пятница";
+saturdayTitle = "Суббота";
+sundayTitle = "Воскресенье";
+
+mondayShortTitle = "Пн";
+tuesdayShortTitle = "Вт";
+wednesdayShortTitle = "Ср";
+thursdayShortTitle = "Чт";
+fridayShortTitle = "Пт";
+saturdayShortTitle = "Сб";
+sundayShortTitle = "Вс";
+
+// MARK: - CategorySelection
+categorySelectionTitle = "Категория";
+addCategoryButtonTitle = "Добавить категорию";
+deleteCategoryConfirmationTitle = "Эта категория точно не нужна?";
+
+// MARK: - Alert
+cancelButtonTitle = "Отменить";
+deleteButtonTitle = "Удалить";

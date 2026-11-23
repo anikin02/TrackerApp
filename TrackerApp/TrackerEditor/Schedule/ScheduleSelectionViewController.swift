@@ -25,7 +25,7 @@ final class ScheduleSelectionViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = .whiteYP
-    title = "Расписание"
+    title = NSLocalizedString("scheduleSelectionTitle", comment: "")
     configureTable()
     configureDoneButton()
     bindViewModel()
@@ -60,7 +60,8 @@ final class ScheduleSelectionViewController: UIViewController {
   
   private func configureDoneButton() {
     doneButton.translatesAutoresizingMaskIntoConstraints = false
-    doneButton.setTitle("Готово", for: .normal)
+    let doneButtonTitle = NSLocalizedString("doneButtonTitle", comment: "")
+    doneButton.setTitle(doneButtonTitle, for: .normal)
     doneButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
     doneButton.setTitleColor(.whiteYP, for: .normal)
     doneButton.backgroundColor = .blackYP

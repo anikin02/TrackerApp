@@ -47,7 +47,8 @@ final class StatisticsViewController: UIViewController {
   
   private func configureEmptyStateView() {
     emptyStateView.translatesAutoresizingMaskIntoConstraints = false
-    emptyStateView.config(with: "Анализировать пока нечего", image: UIImage(resource: .emptyStatisticsState))
+    let emptyStatisticsTitle = NSLocalizedString("emptyStatisticsTitle", comment: "")
+    emptyStateView.config(with: emptyStatisticsTitle, image: UIImage(resource: .emptyStatisticsState))
     view.addSubview(emptyStateView)
     NSLayoutConstraint.activate([
       emptyStateView.topAnchor.constraint(equalTo: titleLabel.topAnchor),
@@ -80,7 +81,7 @@ final class StatisticsViewController: UIViewController {
   
   private func configureTitleLabel() {
     titleLabel.translatesAutoresizingMaskIntoConstraints = false
-    titleLabel.text = "Статистика"
+    titleLabel.text = NSLocalizedString("statisticsTitle", comment: "")
     titleLabel.textColor = .blackYP
     titleLabel.font = .systemFont(ofSize: 34, weight: .bold)
     view.addSubview(titleLabel)

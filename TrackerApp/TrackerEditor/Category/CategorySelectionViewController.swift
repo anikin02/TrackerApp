@@ -79,7 +79,8 @@ final class CategorySelectionViewController: UIViewController {
   
   private func configureUI() {
     view.backgroundColor = .whiteYP
-    title = "Категория"
+    let categorySelectionTitle = NSLocalizedString("categorySelectionTitle", comment: "")
+    title = categorySelectionTitle
     configureCreateCategoryButton()
     configureTableView()
     configureEmptyStateView()
@@ -120,7 +121,8 @@ final class CategorySelectionViewController: UIViewController {
   
   private func configureEmptyStateView() {
     emptyStateView.translatesAutoresizingMaskIntoConstraints = false
-    emptyStateView.config(with: "Привычки и события можно\nобъединить по смыслу")
+    let emptyCategoriesTitle = NSLocalizedString("emptyCategoriesTitle", comment: "")
+    emptyStateView.config(with: emptyCategoriesTitle)
     
     view.addSubview(emptyStateView)
     
@@ -134,7 +136,8 @@ final class CategorySelectionViewController: UIViewController {
   
   private func configureCreateCategoryButton() {
     editorCategoryButton.translatesAutoresizingMaskIntoConstraints = false
-    editorCategoryButton.setTitle("Добавить категорию", for: .normal)
+    let addCategoryButtonTitle = NSLocalizedString("addCategoryButtonTitle", comment: "")
+    editorCategoryButton.setTitle(addCategoryButtonTitle, for: .normal)
     editorCategoryButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
     editorCategoryButton.setTitleColor(.whiteYP, for: .normal)
     editorCategoryButton.backgroundColor = .blackYP
@@ -171,7 +174,8 @@ final class CategorySelectionViewController: UIViewController {
   }
   
   @objc private func editorCategoryButtonTapped() {
-    showEditorCategory(titleView: "Новая категория")
+    let categoryCreationTitle = NSLocalizedString("categoryCreationTitle", comment: "")
+    showEditorCategory(titleView: categoryCreationTitle)
   }
   
   private func showEditorCategory(titleView: String, oldCategoryTitle: String? = nil) {
@@ -214,14 +218,18 @@ extension CategorySelectionViewController: UITableViewDelegate {
   
   func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
     return UIContextMenuConfiguration(identifier: indexPath as NSCopying, previewProvider: nil) { [weak self] _ in
-      let edit = UIAction(title: "Редактировать") { _ in
+      let editAction = NSLocalizedString("editAction", comment: "")
+      let deleteAction = NSLocalizedString("deleteAction", comment: "")
+      let edit = UIAction(title: editAction) { _ in
         guard let self else { return }
         let category = self.viewModel.cellViewModel(at: indexPath.row)
-        self.showEditorCategory(titleView: "Редактирование категории", oldCategoryTitle: category.title)
+        let categoryEditTitle = NSLocalizedString("categoryEditTitle", comment: "")
+        self.showEditorCategory(titleView: categoryEditTitle, oldCategoryTitle: category.title)
       }
-      let delete = UIAction(title: "Удалить", attributes: .destructive) { _ in
+      let delete = UIAction(title: deleteAction, attributes: .destructive) { _ in
         guard let self else { return }
-        DeleteConfirmationAlert.present(on: self, title: "Эта категория точно не нужна?") { [weak self] in
+        let deleteCategoryConfirmationTitle = NSLocalizedString("deleteCategoryConfirmationTitle", comment: "")
+        DeleteConfirmationAlert.present(on: self, title: deleteCategoryConfirmationTitle) { [weak self] in
           self?.viewModel.deleteCategory(at: indexPath.row)
         }
       }

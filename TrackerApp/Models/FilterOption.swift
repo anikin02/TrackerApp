@@ -5,6 +5,8 @@
 //  Created by Данил on 22/11/2026.
 //
 
+import Foundation
+
 enum FilterOption: Int, CaseIterable {
   case showAllTrackers = 0
   case showTodayTrackers = 1
@@ -14,13 +16,13 @@ enum FilterOption: Int, CaseIterable {
   var title: String {
     switch self {
       case .showAllTrackers:
-        return "Все трекеры"
+        return NSLocalizedString("allTrackersFilterTitle", comment: "")
       case .showTodayTrackers:
-        return "Трекеры на сегодня"
+        return NSLocalizedString("todayTrackersFilterTitle", comment: "")
       case .showComplitedTrackers:
-        return "Завершенные"
+        return NSLocalizedString("completedTrackersFilterTitle", comment: "")
       case .showUncomplitedTrackers:
-        return "Не завершенные"
+        return NSLocalizedString("uncompletedTrackersFilterTitle", comment: "")
     }
   }
   

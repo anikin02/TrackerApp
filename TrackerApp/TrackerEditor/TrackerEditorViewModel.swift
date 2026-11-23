@@ -49,9 +49,9 @@ final class TrackerEditorViewModel {
     var title: String {
       switch self {
         case .category:
-          return "Категория"
+          return NSLocalizedString("categoryOption", comment: "")
         case .schedule:
-          return "Расписание"
+          return NSLocalizedString("scheduleOption", comment: "")
       }
     }
   }
@@ -64,7 +64,7 @@ final class TrackerEditorViewModel {
         case .emoji:
           return "Emoji"
         case .color:
-          return "Цвет"
+          return NSLocalizedString("colorOption", comment: "")
       }
     }
     var items: [String] {
@@ -92,13 +92,16 @@ final class TrackerEditorViewModel {
     self.isRegularTracker = isRegularTracker
     self.titleView = titleView
     self.editingTracker = oldTracker
-    errorText = "Ограничение \(maxLengthTitle) символов"
+    errorText = String.localizedStringWithFormat(
+      NSLocalizedString("errorTrackerName", comment: ""),
+      maxLengthTitle
+    )
     
     if let oldTracker, let oldCategory {
-      titleSaveButton = "Сохранить"
+      titleSaveButton = NSLocalizedString("editTrackerButton", comment: "")
       configureEditView(tracker: oldTracker, category: oldCategory)
     } else {
-      titleSaveButton = "Создать"
+      titleSaveButton = NSLocalizedString("createTrackerButton", comment: "")
     }
     configureTrackerType()
   }
@@ -145,7 +148,7 @@ final class TrackerEditorViewModel {
     } else {
       delegate?.addNewTracker(tracker: tracker, category: selectedCategory)
     }
-
+    
     onTrackerSaved?(())
   }
   

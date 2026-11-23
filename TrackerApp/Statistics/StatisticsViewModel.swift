@@ -5,6 +5,7 @@
 //  Created by Данил on 23/11/2026.
 //
 
+import Foundation
 
 final class StatisticsViewModel {
   // MARK: - Bindings
@@ -33,13 +34,13 @@ final class StatisticsViewModel {
     var title: String {
       switch self {
         case .countComplitedTrackers:
-          return "Трекеров завершено"
+          return NSLocalizedString("completedTrackersStatTitle", comment: "")
         case .bestRange:
-          return "Лучший период"
+          return NSLocalizedString("bestPeriodStatTitle", comment: "")
         case .countBestDays:
-          return "Идеальные дни"
+          return NSLocalizedString("perfectDaysStatTitle", comment: "")
         case .averageComplitedTrackers:
-          return "Среднее значение"
+          return NSLocalizedString("averageValueStatTitle", comment: "")
       }
     }
     
