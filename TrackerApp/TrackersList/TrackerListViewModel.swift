@@ -57,6 +57,7 @@ final class TrackersListViewModel {
     categories = trackerCategoryStore.categories
     completedTrackers = trackerRecordStore.records
     updateVisibleCategories()
+    updateStatistics()
   }
   
   func searchTextDidChange(searchText: String) {
@@ -106,6 +107,7 @@ final class TrackersListViewModel {
         try trackerRecordStore.addNewTrackerRecord(trackerRecord: record)
       }
       completedTrackers = trackerRecordStore.records
+      updateStatistics()
       let filter = FilterSavingService.shared.savedFilter
       guard filter == .showComplitedTrackers || filter == .showUncomplitedTrackers else {
         onUpdate?(.reloadItems([position]))
@@ -171,6 +173,7 @@ final class TrackersListViewModel {
       
       for tracker in category.trackers {
         guard tracker.schedule.contains(currentDay) else { continue }
+        if !tracker.isRegular && isDoneOnAnotherDay(tracker) { continue }
         
         if tracker.isPinned {
           pinnedTrackers.append(tracker)
@@ -192,6 +195,12 @@ final class TrackersListViewModel {
     }
     
     return regularCategories
+  }
+  
+  private func isDoneOnAnotherDay(_ tracker: Tracker) -> Bool {
+    completedTrackers.contains {
+      $0.trackerId == tracker.id && !Calendar.current.isDate($0.date, inSameDayAs: currentDate)
+    }
   }
   
   private func makeComplitedTrackers(categories: [TrackerCategory]) -> [TrackerCategory] {
@@ -252,6 +261,11 @@ final class TrackersListViewModel {
     onUpdate?(.reload)
     onEmptyStateChange?(visibleCategories.isEmpty)
   }
+  
+  private func updateStatistics() {
+    let allTrackers = categories.flatMap(\.trackers)
+    StatisticService.shared.update(trackers: allTrackers, records: completedTrackers)
+  }
 }
 
 // MARK: - TrackerStoreDelegate
@@ -266,7 +280,7 @@ extension TrackersListViewModel: TrackerStoreDelegate {
       old: oldVisible,
       new: newVisible
     )
-    
+    updateStatistics()
     updates.forEach { onUpdate?($0) }
   }
   
