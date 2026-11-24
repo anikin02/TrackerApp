@@ -41,15 +41,21 @@ final class TrackersListViewModel {
   private var categories: [TrackerCategory] = []
   private var completedTrackers: [TrackerRecord] = []
   private var visibleCategories: [TrackerCategory] = []
-  private let trackerCategoryStore: TrackerCategoryStore = .init()
-  private let trackerRecordStore: TrackerRecordStore = .init()
-  private let trackerStore: TrackerStore = .init()
+  private let trackerCategoryStore: TrackerCategoryStoreProtocol
+  private let trackerRecordStore: TrackerRecordStoreProtocol
+  private let trackerStore: TrackerStoreProtocol
   
   // MARK: - Init
-  init() {
-    trackerStore.delegate = self
-    trackerRecordStore.delegate = self
-    trackerCategoryStore.delegate = self
+  init(trackerCategoryStore: TrackerCategoryStoreProtocol = TrackerCategoryStore(),
+       trackerStore: TrackerStoreProtocol = TrackerStore(),
+       trackerRecordStore: TrackerRecordStoreProtocol = TrackerRecordStore()) {
+    self.trackerCategoryStore = trackerCategoryStore
+    self.trackerStore = trackerStore
+    self.trackerRecordStore = trackerRecordStore
+    
+    self.trackerStore.delegate = self
+    self.trackerRecordStore.delegate = self
+    self.trackerCategoryStore.delegate = self
   }
   
   // MARK: - Methods

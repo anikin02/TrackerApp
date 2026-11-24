@@ -23,12 +23,14 @@ final class CategorySelectionViewModel {
   var onCategorySelected: Binding<String>?
   
   // MARK: - Private Properties
-  private let store: TrackerCategoryStore = .init()
+  private let store: TrackerCategoryStoreProtocol
   private var categories: [TrackerCategory] = []
   private var selectedTitle: String?
   
-  init(selectedTitle: String? = nil) {
+  init(selectedTitle: String? = nil, store: TrackerCategoryStoreProtocol = TrackerCategoryStore()) {
     self.selectedTitle = selectedTitle
+    
+    self.store = store
     self.store.delegate = self
   }
   

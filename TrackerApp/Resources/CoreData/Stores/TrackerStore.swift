@@ -11,7 +11,16 @@ protocol TrackerStoreDelegate: AnyObject {
   func trackerStoreDidUpdate()
 }
 
-final class TrackerStore: NSObject {
+protocol TrackerStoreProtocol: AnyObject {
+  var delegate: TrackerStoreDelegate? { get set }
+  
+  func addNewTracker(with tracker: Tracker, to categoryTitle: String) throws
+  func pinTracker(_ tracker: Tracker) throws
+  func updateTracker(_ tracker: Tracker, in categoryTitle: String) throws
+  func deleteTracker(id: UUID) throws
+}
+
+final class TrackerStore: NSObject, TrackerStoreProtocol {
   weak var delegate: TrackerStoreDelegate?
   
   private let context: NSManagedObjectContext

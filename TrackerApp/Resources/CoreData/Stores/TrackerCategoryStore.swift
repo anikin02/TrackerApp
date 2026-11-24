@@ -11,7 +11,17 @@ protocol TrackerCategoryStoreDelegate: AnyObject {
   func trackerCategoryStoreDidUpdate()
 }
 
-final class TrackerCategoryStore: NSObject {
+protocol TrackerCategoryStoreProtocol: AnyObject {
+  var delegate: TrackerCategoryStoreDelegate? { get set }
+  var categories: [TrackerCategory] { get }
+  
+  func addNewCategory(with category: TrackerCategory) throws
+  func updateCategory(oldTitle: String, newTitle: String) throws
+  func deleteCategory(title: String) throws
+  func fetchCategory(title: String) throws -> TrackerCategoryCoreData?
+}
+
+final class TrackerCategoryStore: NSObject, TrackerCategoryStoreProtocol {
   weak var delegate: TrackerCategoryStoreDelegate?
   var categories: [TrackerCategory] {
     (fetchedResultsController.fetchedObjects ?? []).compactMap(getTrackerCategoryModel)
