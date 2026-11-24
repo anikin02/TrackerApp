@@ -62,6 +62,7 @@ final class CategorySelectionViewController: UIViewController {
           let path = indexPath(for: row)
           guard let cell = tableView.cellForRow(at: path) as? CategoryTableViewCell else { continue }
           cell.configureCell(with: viewModel.cellViewModel(at: row))
+          refreshSeparators()
         }
     }
   }
@@ -214,6 +215,10 @@ extension CategorySelectionViewController: UITableViewDataSource {
 extension CategorySelectionViewController: UITableViewDelegate {
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     viewModel.didSelectRow(at: indexPath.row)
+  }
+  
+  func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+    applySeparator(to: cell, at: indexPath)
   }
   
   func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
