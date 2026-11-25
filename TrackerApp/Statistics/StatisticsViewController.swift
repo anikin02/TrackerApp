@@ -14,7 +14,17 @@ final class StatisticsViewController: UIViewController {
   private let titleLabel: UILabel = .init()
   
   // MARK: - Private Properties
-  private let viewModel: StatisticsViewModel = .init()
+  private let viewModel: StatisticsViewModel
+  
+  // MARK: - Init
+  init(viewModel: StatisticsViewModel = .init()) {
+    self.viewModel = viewModel
+    super.init(nibName: nil, bundle: nil)
+  }
+  
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
   
   // MARK: - Lyfecycle
   override func viewWillAppear(_ animated: Bool) {

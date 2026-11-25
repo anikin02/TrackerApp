@@ -7,7 +7,15 @@
 
 import Foundation
 
-final class StatisticService {
+protocol StatisticServiceProtocol {
+  var countComplitedTrackers: Int {get set}
+  var bestRange: Int {get set}
+  var countBestDays: Int {get set}
+  var averageComplitedTrackers: Int {get set}
+  func update(trackers: [Tracker], records: [TrackerRecord])
+}
+
+final class StatisticService: StatisticServiceProtocol {
   static let shared = StatisticService()
   
   private let defaults = UserDefaults.standard

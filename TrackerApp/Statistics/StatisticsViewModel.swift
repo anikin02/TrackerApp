@@ -17,7 +17,7 @@ final class StatisticsViewModel {
   }
   
   // MARK: - Private Properties
-  private let service: StatisticService = .shared
+  private let service: StatisticServiceProtocol
   private var statistics: [StatisticsOption : Int] = [
     .bestRange : 0,
     .countBestDays : 0,
@@ -47,6 +47,10 @@ final class StatisticsViewModel {
     static var sortedByRawValue: [StatisticsOption] {
       allCases.sorted { $0.rawValue < $1.rawValue }
     }
+  }
+  
+  init(service: StatisticServiceProtocol = StatisticService.shared) {
+    self.service = service
   }
   
   func viewWillAppear() {
