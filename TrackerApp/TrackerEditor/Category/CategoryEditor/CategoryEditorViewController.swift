@@ -30,6 +30,16 @@ final class CategoryEditorViewController: UIViewController {
     configureUI()
   }
   
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    AnalyticsService.shared.sendReport(event: .open, screen: .categoryEditor)
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    AnalyticsService.shared.sendReport(event: .close, screen: .categoryEditor)
+  }
+  
   private func configureUI() {
     view.backgroundColor = .whiteYP
     title = titleView

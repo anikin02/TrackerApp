@@ -34,12 +34,23 @@ final class TrackersListViewController: UIViewController {
     fatalError("init(coder:) has not been implemented")
   }
   
+  // MARK: - Lyfecycle
   override func viewDidLoad() {
     super.viewDidLoad()
     
     configureUI()
     bindViewModel()
     viewModel.viewDidLoad()
+  }
+  
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    AnalyticsService.shared.sendReport(event: .open, screen: .trackersList)
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    AnalyticsService.shared.sendReport(event: .close, screen: .trackersList)
   }
   
   // MARK: - Private Methods
@@ -252,6 +263,7 @@ final class TrackersListViewController: UIViewController {
   
   // MARK: - Actions
   @objc private func addTrackerTapped() {
+    AnalyticsService.shared.sendReport(event: .click, screen: .trackersList, item: .addTracker)
     let viewController = TrackerTypeSelectionViewController()
     viewController.delegate = viewModel
     let navController = UINavigationController(rootViewController: viewController)
@@ -260,6 +272,7 @@ final class TrackersListViewController: UIViewController {
   }
   
   @objc private func filterButtonTapped() {
+    AnalyticsService.shared.sendReport(event: .click, screen: .trackersList, item: .filter)
     let viewModel = FilterViewModel(delegate: self.viewModel)
     let viewController = FilterViewController(viewModel: viewModel)
     let navController = UINavigationController(rootViewController: viewController)
@@ -353,14 +366,17 @@ extension TrackersListViewController: UICollectionViewDelegate {
       
       let pin = UIAction(title: isAlreadyPinned ? unpinAction : pinAction) { _ in
         self?.viewModel.didTapPinnedTracker(on: position)
+        AnalyticsService.shared.sendReport(event: .click, screen: .trackersList, item: .pinTracker)
       }
       let edit = UIAction(title: editAction) { _ in
         guard let self else { return }
+        AnalyticsService.shared.sendReport(event: .click, screen: .trackersList, item: .editTracker)
         self.showEditorViewController(tracker: self.viewModel.getTracker(at: position),
                                       category: self.viewModel.getCategory(at: position))
       }
       let delete = UIAction(title: deleteAction, attributes: .destructive) { _ in
         guard let self else { return }
+        AnalyticsService.shared.sendReport(event: .click, screen: .trackersList, item: .deleteTracker)
         DeleteConfirmationAlert.present(on: self, title: deleteTrackerConfirmationTitle) { [weak self] in
           self?.viewModel.didTapDeletedTracker(at: position)
         }
@@ -405,6 +421,7 @@ extension TrackersListViewController: UICollectionViewDelegate {
 extension TrackersListViewController: TrackerCellDelegate {
   func trackerCellDidTapDone(_ cell: TrackerViewCell) {
     guard let indexPath = collectionView.indexPath(for: cell) else { return }
+    AnalyticsService.shared.sendReport(event: .click, screen: .trackersList, item: .track)
     viewModel.didTapDone(at: ItemPosition(section: indexPath.section, item: indexPath.row))
   }
 }

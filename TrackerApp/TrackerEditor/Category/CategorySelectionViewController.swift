@@ -31,6 +31,16 @@ final class CategorySelectionViewController: UIViewController {
     viewModel.viewDidLoad()
   }
   
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    AnalyticsService.shared.sendReport(event: .open, screen: .categorySelection)
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    AnalyticsService.shared.sendReport(event: .close, screen: .categorySelection)
+  }
+  
   private func bindViewModel() {
     viewModel.onTableUpdate = { [weak self] update in
       self?.apply(update)
@@ -176,6 +186,7 @@ final class CategorySelectionViewController: UIViewController {
   
   @objc private func editorCategoryButtonTapped() {
     let categoryCreationTitle = NSLocalizedString("categoryCreationTitle", comment: "")
+    AnalyticsService.shared.sendReport(event: .open, screen: .categorySelection, item: .addCategory)
     showEditorCategory(titleView: categoryCreationTitle)
   }
   
@@ -227,12 +238,14 @@ extension CategorySelectionViewController: UITableViewDelegate {
       let deleteAction = NSLocalizedString("deleteAction", comment: "")
       let edit = UIAction(title: editAction) { _ in
         guard let self else { return }
+        AnalyticsService.shared.sendReport(event: .open, screen: .categorySelection, item: .editCategory)
         let category = self.viewModel.cellViewModel(at: indexPath.row)
         let categoryEditTitle = NSLocalizedString("categoryEditTitle", comment: "")
         self.showEditorCategory(titleView: categoryEditTitle, oldCategoryTitle: category.title)
       }
       let delete = UIAction(title: deleteAction, attributes: .destructive) { _ in
         guard let self else { return }
+        AnalyticsService.shared.sendReport(event: .open, screen: .categorySelection, item: .editCategory)
         let deleteCategoryConfirmationTitle = NSLocalizedString("deleteCategoryConfirmationTitle", comment: "")
         DeleteConfirmationAlert.present(on: self, title: deleteCategoryConfirmationTitle) { [weak self] in
           self?.viewModel.deleteCategory(at: indexPath.row)

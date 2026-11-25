@@ -40,6 +40,16 @@ final class OnboardingViewController: UIPageViewController {
     configureUI()
   }
   
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    AnalyticsService.shared.sendReport(event: .open, screen: .onboarding)
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    AnalyticsService.shared.sendReport(event: .close, screen: .onboarding)
+  }
+  
   // MARK: - Private Methods
   private func configureUI() {
     configurePages()

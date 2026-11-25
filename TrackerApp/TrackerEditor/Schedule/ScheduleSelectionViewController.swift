@@ -31,6 +31,16 @@ final class ScheduleSelectionViewController: UIViewController {
     bindViewModel()
   }
   
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    AnalyticsService.shared.sendReport(event: .open, screen: .scheduleSelection)
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    AnalyticsService.shared.sendReport(event: .close, screen: .scheduleSelection)
+  }
+  
   private func bindViewModel() {
     viewModel.onScheduleConfirmed = { [weak self] days in
       self?.onDone?(days)

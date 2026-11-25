@@ -11,6 +11,7 @@ final class FilterViewController: UIViewController {
   let filtersTableView: UITableView = .init()
   let viewModel: FilterViewModel
   
+  // MARK: - Init
   init(viewModel: FilterViewModel) {
     self.viewModel = viewModel
     
@@ -21,12 +22,24 @@ final class FilterViewController: UIViewController {
     fatalError("init(coder:) has not been implemented")
   }
   
+  // MARK: - Lifecycle
   override func viewDidLoad() {
     super.viewDidLoad()
     configureUI()
     bindViewModel() 
   }
   
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    AnalyticsService.shared.sendReport(event: .open, screen: .filter)
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    AnalyticsService.shared.sendReport(event: .close, screen: .filter)
+  }
+  
+  // MARK: - Private Methods
   private func bindViewModel() {
     viewModel.reloadRows = { [weak self] rows in
       let indexPaths = rows.map { IndexPath(row: $0, section: 0) }
@@ -66,6 +79,7 @@ final class FilterViewController: UIViewController {
 extension FilterViewController: UITableViewDelegate {
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     viewModel.didSelectRow(at: indexPath.row)
+    AnalyticsService.shared.sendReport(event: .click, screen: .filter, item: .filterOption)
   }
 }
 

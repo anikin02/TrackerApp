@@ -39,6 +39,16 @@ final class StatisticsViewController: UIViewController {
     bindViewModel()
   }
   
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    AnalyticsService.shared.sendReport(event: .open, screen: .statistics)
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    AnalyticsService.shared.sendReport(event: .close, screen: .statistics)
+  }
+  
   // MARK: - Private Methods
   private func bindViewModel() {
     viewModel.onEmptyStateChange = { [weak self] isEmpty in

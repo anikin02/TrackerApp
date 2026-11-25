@@ -8,12 +8,13 @@
 import AppMetricaCore
 
 enum AnalyticsScreenName: String {
-  case trackersList = "trackers-list"
+  case trackersList = "trackers_list"
   case filter = "filter"
-  case trackerEditor = "tracker-editor"
-  case categoryEditor = "category-editor"
-  case categorySelection = "category-selection"
-  case categorySchedule = "schedule-selection"
+  case typeSelection = "type_selection"
+  case trackerEditor = "tracker_editor"
+  case categoryEditor = "category_editor"
+  case categorySelection = "category_selection"
+  case scheduleSelection = "schedule_selection"
   case statistics = "statistics"
   case onboarding = "onboarding"
 }
@@ -25,11 +26,25 @@ enum AnalyticsEvent: String {
 }
 
 enum AnalyticsItem: String {
-  case addTrack = "add_track"
+  case addTracker = "add_tracker"
   case track = "track"
   case filter = "filter"
-  case edit = "edit"
-  case delete = "delete"
+  case editTracker = "edit_tacker"
+  case deleteTracker = "delete_tacker"
+  case pinTracker = "pin_tracker"
+  
+  case filterOption = "filter_option"
+  
+  case selectRegularTracker = "select_regular_tracker"
+  case selectUnregularTracker = "select_unregular_tracker"
+  
+  case cancel = "cancel"
+  case save = "save"
+  
+  case addCategory = "add_category"
+  case selectCategory = "select_category"
+  case deleteCategory = "delete_category"
+  case editCategory = "edit_category"
 }
 
 final class AnalyticsService {

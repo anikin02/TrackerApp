@@ -26,6 +26,7 @@ final class TrackerEditorViewController: UIViewController {
   private let stackButtons: UIStackView = .init()
   private let viewModel: TrackerEditorViewModel
   
+  // MARK: - Init
   init(viewModel: TrackerEditorViewModel) {
     self.viewModel = viewModel
     super.init(nibName: nil, bundle: nil)
@@ -35,10 +36,21 @@ final class TrackerEditorViewController: UIViewController {
     fatalError("init(coder:) has not been implemented")
   }
   
+  // MARK: - Lifecycle
   override func viewDidLoad() {
     super.viewDidLoad()
     configureUI()
     bindViewModel()
+  }
+  
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    AnalyticsService.shared.sendReport(event: .open, screen: .trackerEditor)
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    AnalyticsService.shared.sendReport(event: .close, screen: .trackerEditor)
   }
   
   override func viewDidLayoutSubviews() {
@@ -50,6 +62,7 @@ final class TrackerEditorViewController: UIViewController {
     }
   }
   
+  // MARK: - Private Methods
   private func bindViewModel() {
     viewModel.onCreateButtonStateChange = { [weak self] isEnabled in
       isEnabled ? self?.enableCreateButton() : self?.disableCreateButton()
@@ -272,10 +285,12 @@ final class TrackerEditorViewController: UIViewController {
   
   // MARK: - Actions
   @objc private func saveButtonTapped() {
+    AnalyticsService.shared.sendReport(event: .click, screen: .trackerEditor, item: .save)
     viewModel.didTappedSaveButton()
   }
   
   @objc private func cancelButtonTapped() {
+    AnalyticsService.shared.sendReport(event: .click, screen: .trackerEditor, item: .cancel)
     dismiss(animated: true)
   }
   

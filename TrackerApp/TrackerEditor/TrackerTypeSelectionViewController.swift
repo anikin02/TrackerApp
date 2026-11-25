@@ -19,6 +19,16 @@ final class TrackerTypeSelectionViewController: UIViewController {
     configureUI()
   }
   
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    AnalyticsService.shared.sendReport(event: .open, screen: .typeSelection)
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    AnalyticsService.shared.sendReport(event: .close, screen: .typeSelection)
+  }
+  
   private func configureUI() {
     view.backgroundColor = .whiteYP
     title = NSLocalizedString("trackerTypeSelectionTitle", comment: "")
@@ -81,11 +91,13 @@ final class TrackerTypeSelectionViewController: UIViewController {
   
   @objc private func createRegularButtonTapped() {
     let title = NSLocalizedString("regularTrackerCreationTitle", comment: "")
+    AnalyticsService.shared.sendReport(event: .click, screen: .typeSelection, item: .selectRegularTracker)
     showCreationView(title: title, isRegular: true)
   }
   
   @objc private func createUnregularButtonTapped() {
     let title = NSLocalizedString("unregularTrackerCreationTitle", comment: "")
+    AnalyticsService.shared.sendReport(event: .click, screen: .typeSelection, item: .selectUnregularTracker)
     showCreationView(title: title, isRegular: false)
   }
   
