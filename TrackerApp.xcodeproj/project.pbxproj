@@ -11,6 +11,17 @@
 		782D71AC30B55DFA008323B2 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 782D71AB30B55DFA008323B2 /* SnapshotTesting */; };
 		782D71AE30B55DFA008323B2 /* SnapshotTestingCustomDump in Frameworks */ = {isa = PBXBuildFile; productRef = 782D71AD30B55DFA008323B2 /* SnapshotTestingCustomDump */; };
 		786099B030B6B76300D88F04 /* AppMetricaCore in Frameworks */ = {isa = PBXBuildFile; productRef = 786099AF30B6B76300D88F04 /* AppMetricaCore */; };
+		78609A2430B6FB2D00D88F04 /* CategoryEditorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786099C030B6FB2D00D88F04 /* CategoryEditorTests.swift */; };
+		78609A2530B6FB2D00D88F04 /* CategorySelectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786099C830B6FB2D00D88F04 /* CategorySelectionTests.swift */; };
+		78609A2630B6FB2D00D88F04 /* ScheduleSelectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786099CE30B6FB2D00D88F04 /* ScheduleSelectionTests.swift */; };
+		78609A2730B6FB2D00D88F04 /* StatisticsServiceSpy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786099D030B6FB2D00D88F04 /* StatisticsServiceSpy.swift */; };
+		78609A2830B6FB2D00D88F04 /* TrackerCategoryStoreSpy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786099D130B6FB2D00D88F04 /* TrackerCategoryStoreSpy.swift */; };
+		78609A2930B6FB2D00D88F04 /* TrackerRecordStoreSpy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786099D230B6FB2D00D88F04 /* TrackerRecordStoreSpy.swift */; };
+		78609A2A30B6FB2D00D88F04 /* TrackerStoreSpy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786099D330B6FB2D00D88F04 /* TrackerStoreSpy.swift */; };
+		78609A2B30B6FB2D00D88F04 /* StatisticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786099DB30B6FB2D00D88F04 /* StatisticsTests.swift */; };
+		78609A2C30B6FB2D00D88F04 /* TrackerEditorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786099E530B6FB2D00D88F04 /* TrackerEditorTests.swift */; };
+		78609A2D30B6FB2D00D88F04 /* TrackersListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786099F730B6FB2D00D88F04 /* TrackersListTests.swift */; };
+		78609A2E30B6FB2D00D88F04 /* TrackerTypeSelectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786099FD30B6FB2D00D88F04 /* TrackerTypeSelectionTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -26,6 +37,17 @@
 /* Begin PBXFileReference section */
 		7810319A3099D12E00D11786 /* TrackerApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrackerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		782D719F30B54ACB008323B2 /* TrackerAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrackerAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		786099C030B6FB2D00D88F04 /* CategoryEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryEditorTests.swift; sourceTree = "<group>"; };
+		786099C830B6FB2D00D88F04 /* CategorySelectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategorySelectionTests.swift; sourceTree = "<group>"; };
+		786099CE30B6FB2D00D88F04 /* ScheduleSelectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleSelectionTests.swift; sourceTree = "<group>"; };
+		786099D030B6FB2D00D88F04 /* StatisticsServiceSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsServiceSpy.swift; sourceTree = "<group>"; };
+		786099D130B6FB2D00D88F04 /* TrackerCategoryStoreSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCategoryStoreSpy.swift; sourceTree = "<group>"; };
+		786099D230B6FB2D00D88F04 /* TrackerRecordStoreSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerRecordStoreSpy.swift; sourceTree = "<group>"; };
+		786099D330B6FB2D00D88F04 /* TrackerStoreSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerStoreSpy.swift; sourceTree = "<group>"; };
+		786099DB30B6FB2D00D88F04 /* StatisticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsTests.swift; sourceTree = "<group>"; };
+		786099E530B6FB2D00D88F04 /* TrackerEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerEditorTests.swift; sourceTree = "<group>"; };
+		786099F730B6FB2D00D88F04 /* TrackersListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackersListTests.swift; sourceTree = "<group>"; };
+		786099FD30B6FB2D00D88F04 /* TrackerTypeSelectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerTypeSelectionTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -45,11 +67,6 @@
 				781031AC3099D12F00D11786 /* Exceptions for "TrackerApp" folder in "TrackerApp" target */,
 			);
 			path = TrackerApp;
-			sourceTree = "<group>";
-		};
-		782D71A030B54ACB008323B2 /* TrackerAppTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = TrackerAppTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -80,7 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				7810319C3099D12E00D11786 /* TrackerApp */,
-				782D71A030B54ACB008323B2 /* TrackerAppTests */,
+				786099FF30B6FB2D00D88F04 /* TrackerAppTests */,
 				7810319B3099D12E00D11786 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -92,6 +109,88 @@
 				782D719F30B54ACB008323B2 /* TrackerAppTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		786099C130B6FB2D00D88F04 /* CategoryEditor */ = {
+			isa = PBXGroup;
+			children = (
+				786099C030B6FB2D00D88F04 /* CategoryEditorTests.swift */,
+			);
+			path = CategoryEditor;
+			sourceTree = "<group>";
+		};
+		786099C930B6FB2D00D88F04 /* CategorySelection */ = {
+			isa = PBXGroup;
+			children = (
+				786099C830B6FB2D00D88F04 /* CategorySelectionTests.swift */,
+			);
+			path = CategorySelection;
+			sourceTree = "<group>";
+		};
+		786099CF30B6FB2D00D88F04 /* ScheduleSelection */ = {
+			isa = PBXGroup;
+			children = (
+				786099CE30B6FB2D00D88F04 /* ScheduleSelectionTests.swift */,
+			);
+			path = ScheduleSelection;
+			sourceTree = "<group>";
+		};
+		786099D430B6FB2D00D88F04 /* Spies */ = {
+			isa = PBXGroup;
+			children = (
+				786099D030B6FB2D00D88F04 /* StatisticsServiceSpy.swift */,
+				786099D130B6FB2D00D88F04 /* TrackerCategoryStoreSpy.swift */,
+				786099D230B6FB2D00D88F04 /* TrackerRecordStoreSpy.swift */,
+				786099D330B6FB2D00D88F04 /* TrackerStoreSpy.swift */,
+			);
+			path = Spies;
+			sourceTree = "<group>";
+		};
+		786099DC30B6FB2D00D88F04 /* Statistics */ = {
+			isa = PBXGroup;
+			children = (
+				786099DB30B6FB2D00D88F04 /* StatisticsTests.swift */,
+			);
+			path = Statistics;
+			sourceTree = "<group>";
+		};
+		786099E630B6FB2D00D88F04 /* TrackerEditor */ = {
+			isa = PBXGroup;
+			children = (
+				786099E530B6FB2D00D88F04 /* TrackerEditorTests.swift */,
+			);
+			path = TrackerEditor;
+			sourceTree = "<group>";
+		};
+		786099F830B6FB2D00D88F04 /* TrackersList */ = {
+			isa = PBXGroup;
+			children = (
+				786099F730B6FB2D00D88F04 /* TrackersListTests.swift */,
+			);
+			path = TrackersList;
+			sourceTree = "<group>";
+		};
+		786099FE30B6FB2D00D88F04 /* TrackerTypeSelection */ = {
+			isa = PBXGroup;
+			children = (
+				786099FD30B6FB2D00D88F04 /* TrackerTypeSelectionTests.swift */,
+			);
+			path = TrackerTypeSelection;
+			sourceTree = "<group>";
+		};
+		786099FF30B6FB2D00D88F04 /* TrackerAppTests */ = {
+			isa = PBXGroup;
+			children = (
+				786099C130B6FB2D00D88F04 /* CategoryEditor */,
+				786099C930B6FB2D00D88F04 /* CategorySelection */,
+				786099CF30B6FB2D00D88F04 /* ScheduleSelection */,
+				786099D430B6FB2D00D88F04 /* Spies */,
+				786099DC30B6FB2D00D88F04 /* Statistics */,
+				786099E630B6FB2D00D88F04 /* TrackerEditor */,
+				786099F830B6FB2D00D88F04 /* TrackersList */,
+				786099FE30B6FB2D00D88F04 /* TrackerTypeSelection */,
+			);
+			path = TrackerAppTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -132,9 +231,6 @@
 			);
 			dependencies = (
 				782D71A430B54ACB008323B2 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				782D71A030B54ACB008323B2 /* TrackerAppTests */,
 			);
 			name = TrackerAppTests;
 			packageProductDependencies = (
@@ -221,6 +317,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				78609A2430B6FB2D00D88F04 /* CategoryEditorTests.swift in Sources */,
+				78609A2530B6FB2D00D88F04 /* CategorySelectionTests.swift in Sources */,
+				78609A2630B6FB2D00D88F04 /* ScheduleSelectionTests.swift in Sources */,
+				78609A2730B6FB2D00D88F04 /* StatisticsServiceSpy.swift in Sources */,
+				78609A2830B6FB2D00D88F04 /* TrackerCategoryStoreSpy.swift in Sources */,
+				78609A2930B6FB2D00D88F04 /* TrackerRecordStoreSpy.swift in Sources */,
+				78609A2A30B6FB2D00D88F04 /* TrackerStoreSpy.swift in Sources */,
+				78609A2B30B6FB2D00D88F04 /* StatisticsTests.swift in Sources */,
+				78609A2C30B6FB2D00D88F04 /* TrackerEditorTests.swift in Sources */,
+				78609A2D30B6FB2D00D88F04 /* TrackersListTests.swift in Sources */,
+				78609A2E30B6FB2D00D88F04 /* TrackerTypeSelectionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
