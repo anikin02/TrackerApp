@@ -47,6 +47,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
     createRegularButton.translatesAutoresizingMaskIntoConstraints = false
     let title = NSLocalizedString("regularTrackerButtonTitle", comment: "")
     createRegularButton.setTitle(title, for: .normal)
+    createRegularButton.setTitleColor(.whiteYP, for: .normal)
     createRegularButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
     createRegularButton.backgroundColor = .blackYP
     createRegularButton.layer.cornerRadius = 16
@@ -64,6 +65,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
     createUnregularButton.translatesAutoresizingMaskIntoConstraints = false
     let title = NSLocalizedString("unregularTrackerButtonTitle", comment: "")
     createUnregularButton.setTitle(title, for: .normal)
+    createUnregularButton.setTitleColor(.whiteYP, for: .normal)
     createUnregularButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
     createUnregularButton.backgroundColor = .blackYP
     createUnregularButton.layer.cornerRadius = 16
