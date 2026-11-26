@@ -66,7 +66,7 @@ final class StatisticsViewModel {
   private func updateStatistics() {
     statistics[.bestRange] = service.bestRange
     statistics[.countBestDays] = service.countBestDays
-    statistics[.countComplitedTrackers] = service.countComplitedTrackers
+    statistics[.countComplitedTrackers] = service.countCompletedTrackers
     statistics[.averageComplitedTrackers] = service.averageComplitedTrackers
     
     

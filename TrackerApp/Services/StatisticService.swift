@@ -8,7 +8,7 @@
 import Foundation
 
 protocol StatisticServiceProtocol {
-  var countComplitedTrackers: Int {get set}
+  var countCompletedTrackers: Int {get set}
   var bestRange: Int {get set}
   var countBestDays: Int {get set}
   var averageComplitedTrackers: Int {get set}
@@ -20,7 +20,7 @@ final class StatisticService: StatisticServiceProtocol {
   
   private let defaults = UserDefaults.standard
   private enum Key {
-    static let countComplitedTrackers = "countComplitedTrackers"
+    static let countCompletedTrackers = "countComplitedTrackers"
     static let bestRange = "bestRange"
     static let countBestDays = "countBestDays"
     static let averageComplitedTrackers = "averageComplitedTrackers"
@@ -28,12 +28,12 @@ final class StatisticService: StatisticServiceProtocol {
   
   private init() {}
   
-  var countComplitedTrackers: Int {
+  var countCompletedTrackers: Int {
     get {
-      defaults.integer(forKey: Key.countComplitedTrackers)
+      defaults.integer(forKey: Key.countCompletedTrackers)
     }
     set {
-      defaults.set(newValue, forKey: Key.countComplitedTrackers)
+      defaults.set(newValue, forKey: Key.countCompletedTrackers)
     }
   }
   
@@ -66,7 +66,7 @@ final class StatisticService: StatisticServiceProtocol {
   
   func update(trackers: [Tracker], records: [TrackerRecord]) {
     let calendar = Calendar.current
-    countComplitedTrackers = records.count
+    countCompletedTrackers = records.count
 
     guard !records.isEmpty else {
       bestRange = 0
