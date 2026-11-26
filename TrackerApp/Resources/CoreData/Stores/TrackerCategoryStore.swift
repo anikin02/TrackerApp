@@ -11,7 +11,17 @@ protocol TrackerCategoryStoreDelegate: AnyObject {
   func trackerCategoryStoreDidUpdate()
 }
 
-final class TrackerCategoryStore: NSObject {
+protocol TrackerCategoryStoreProtocol: AnyObject {
+  var delegate: TrackerCategoryStoreDelegate? { get set }
+  var categories: [TrackerCategory] { get }
+  
+  func addNewCategory(with category: TrackerCategory) throws
+  func updateCategory(oldTitle: String, newTitle: String) throws
+  func deleteCategory(title: String) throws
+  func fetchCategory(title: String) throws -> TrackerCategoryCoreData?
+}
+
+final class TrackerCategoryStore: NSObject, TrackerCategoryStoreProtocol {
   weak var delegate: TrackerCategoryStoreDelegate?
   var categories: [TrackerCategory] {
     (fetchedResultsController.fetchedObjects ?? []).compactMap(getTrackerCategoryModel)
@@ -50,6 +60,32 @@ final class TrackerCategoryStore: NSObject {
     object.title = category.title
     
     try context.save()
+  }
+  
+  func updateCategory(oldTitle: String, newTitle: String) throws {
+    guard let object = try fetchCategory(title: oldTitle) else {
+      return
+    }
+
+    object.title = newTitle
+
+    try context.save()
+  }
+
+  func deleteCategory(title: String) throws {
+    guard let object = try fetchCategory(title: title) else {
+      return
+    }
+    
+    context.delete(object)
+    try context.save()
+  }
+  
+  func fetchCategory(title: String) throws -> TrackerCategoryCoreData? {
+    let request = TrackerCategoryCoreData.fetchRequest()
+    request.predicate = NSPredicate(format: "title == %@", title)
+    request.fetchLimit = 1
+    return try context.fetch(request).first
   }
   
   private func getTrackerCategoryModel(object: TrackerCategoryCoreData) -> TrackerCategory? {

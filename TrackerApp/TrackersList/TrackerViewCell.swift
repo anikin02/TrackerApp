@@ -10,6 +10,7 @@ import UIKit
 final class TrackerViewCell: UICollectionViewCell {
   static let reuseIdentifier = "TrackerViewCell"
   weak var delegate: TrackerCellDelegate?
+  var previewView: UIView { rootStack }
   
   //MARK: - UI Elements
   private let bottomStack: UIStackView = .init()
@@ -18,6 +19,7 @@ final class TrackerViewCell: UICollectionViewCell {
   private let emojiLabel: UILabel = .init()
   private let countLabel: UILabel = .init()
   private let doneButton: UIButton = .init()
+  private let pinImage: UIImageView = .init()
   
   //MARK: - Properties
   private var isDone: Bool = false
@@ -31,18 +33,22 @@ final class TrackerViewCell: UICollectionViewCell {
     fatalError("init(coder:) has not been implemented")
   }
   
-  func configureCell(with model: TrackerCellModel) {
+  func configure(with model: TrackerCellModel) {
     nameLabel.text = model.name
     emojiLabel.text = model.emoji
-    countLabel.text = model.daysCountText
     
     rootStack.backgroundColor = UIColor(hex: model.hexColor)
-    
-    isDone = model.isDone
     doneButton.tintColor = UIColor(hex: model.hexColor)
     doneButton.backgroundColor = .whiteYP
     
+    updateCompletion(with: model)
+  }
+  
+  func updateCompletion(with model: TrackerCellModel) {
+    countLabel.text = model.daysCountText
+    isDone = model.isDone
     setStateDoneButton()
+    pinImage.isHidden = !model.isPinned
   }
   
   private func configureUI() {
@@ -63,6 +69,7 @@ final class TrackerViewCell: UICollectionViewCell {
     
     configureEmojiLabel()
     configureNameLabel()
+    configurePinImage()
     
     contentView.addSubview(rootStack)
     
@@ -95,6 +102,21 @@ final class TrackerViewCell: UICollectionViewCell {
     nameLabel.textColor = .whiteYP
     nameLabel.numberOfLines = 0
     rootStack.addArrangedSubview(nameLabel)
+  }
+  
+  private func configurePinImage() {
+    pinImage.translatesAutoresizingMaskIntoConstraints = false
+    pinImage.image = UIImage(resource: .pin)
+    
+    rootStack.addSubview(pinImage)
+    
+    NSLayoutConstraint.activate([
+      pinImage.heightAnchor.constraint(equalToConstant: 12),
+      pinImage.widthAnchor.constraint(equalToConstant: 8),
+      
+      pinImage.topAnchor.constraint(equalTo: rootStack.topAnchor, constant: 18),
+      pinImage.trailingAnchor.constraint(equalTo: rootStack.trailingAnchor, constant: -12),
+    ])
   }
   
   private func configureBottomStack() {

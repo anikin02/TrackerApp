@@ -18,10 +18,12 @@ final class TrackersListViewController: UIViewController {
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
     return collectionView
   }()
+  private let filterButton: UIButton = .init()
   
   // MARK: - Private Properties
   private let viewModel: TrackersListViewModel
   
+  // MARK: - Init
   init(viewModel: TrackersListViewModel = .init()) {
     self.viewModel = viewModel
     
@@ -32,6 +34,7 @@ final class TrackersListViewController: UIViewController {
     fatalError("init(coder:) has not been implemented")
   }
   
+  // MARK: - Lyfecycle
   override func viewDidLoad() {
     super.viewDidLoad()
     
@@ -40,13 +43,26 @@ final class TrackersListViewController: UIViewController {
     viewModel.viewDidLoad()
   }
   
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    AnalyticsService.shared.sendReport(event: .open, screen: .trackersList)
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    AnalyticsService.shared.sendReport(event: .close, screen: .trackersList)
+  }
+  
   // MARK: - Private Methods
   private func bindViewModel() {
     viewModel.onEmptyStateChange = { [weak self] isEmpty in
+      guard let self else { return }
       if isEmpty {
-        self?.showEmptyState()
+        self.showEmptyState()
+        self.filterButton.isHidden = !self.viewModel.isFilter
       } else {
-        self?.hideEmptyState()
+        self.hideEmptyState()
+        self.filterButton.isHidden = false
       }
     }
     viewModel.onUpdate = { [weak self] update in
@@ -58,20 +74,40 @@ final class TrackersListViewController: UIViewController {
     switch update {
       case .reload:
         collectionView.reloadData()
-      case let .insert(sections, items):
+        dateFilterPicker.date = viewModel.currentDate
+      case let .batch(
+        deletedSections,
+        insertedSections,
+        deletedItems,
+        insertedItems
+      ):
         collectionView.performBatchUpdates {
-          collectionView.insertSections(IndexSet(sections))
-          collectionView.insertItems(at: items.map(indexPath))
+          collectionView.deleteSections(
+            IndexSet(deletedSections)
+          )
+          collectionView.deleteItems(
+            at: deletedItems.map(indexPath)
+          )
+          collectionView.insertSections(
+            IndexSet(insertedSections)
+          )
+          collectionView.insertItems(
+            at: insertedItems.map(indexPath)
+          )
         }
       case let .reloadItems(items):
-        collectionView.reloadItems(at: items.map(indexPath))
+        for position in items {
+          guard let cell = collectionView.cellForItem(at: indexPath(for: position))
+                  as? TrackerViewCell else { continue }
+          cell.configure(with: viewModel.cellModel(position: position))
+        }
     }
   }
-
+  
   private func indexPath(for position: ItemPosition) -> IndexPath {
     IndexPath(item: position.item, section: position.section)
   }
-
+  
   private func configureNavigationBar() {
     configureAddTrackerButton()
     configureDateFilterPicker()
@@ -105,7 +141,8 @@ final class TrackersListViewController: UIViewController {
   
   private func configureTitle() {
     titleLabel.translatesAutoresizingMaskIntoConstraints = false
-    titleLabel.text = "Трекеры"
+    let trackersListTitle = NSLocalizedString("trackersListTitle", comment: "")
+    titleLabel.text = trackersListTitle
     titleLabel.font = UIFont.systemFont(ofSize: 34, weight: .bold)
     titleLabel.textColor = .blackYP
     view.addSubview(titleLabel)
@@ -119,7 +156,8 @@ final class TrackersListViewController: UIViewController {
   
   private func configureSearchBar() {
     searchBar.translatesAutoresizingMaskIntoConstraints = false
-    searchBar.placeholder = "Поиск"
+    let searchPlaceholder = NSLocalizedString("searchPlaceholder", comment: "")
+    searchBar.placeholder = searchPlaceholder
     searchBar.searchBarStyle = .minimal
     searchBar.delegate = self
     
@@ -137,11 +175,13 @@ final class TrackersListViewController: UIViewController {
     configureNavigationBar()
     configureCollection()
     configureEmptyView()
+    configureFilterButton()
   }
   
   private func configureEmptyView() {
     emptyStateView.translatesAutoresizingMaskIntoConstraints = false
-    emptyStateView.config(with: "Что будем отслеживать?")
+    let emptyTrackersListTitle = NSLocalizedString("emptyTrackersListTitle", comment: "")
+    emptyStateView.config(with: emptyTrackersListTitle)
     view.addSubview(emptyStateView)
     NSLayoutConstraint.activate([
       emptyStateView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -152,6 +192,13 @@ final class TrackersListViewController: UIViewController {
   }
   
   private func showEmptyState() {
+    if viewModel.isFilter || viewModel.isSearch {
+      let emptySearchTitle = NSLocalizedString("emptySearchTitle", comment: "")
+      emptyStateView.config(with: emptySearchTitle, image: UIImage(resource: .emptySearchState))
+    } else {
+      let emptyTrackersListTitle = NSLocalizedString("emptyTrackersListTitle", comment: "")
+      emptyStateView.config(with: emptyTrackersListTitle)
+    }
     emptyStateView.isHidden = false
   }
   
@@ -177,6 +224,11 @@ final class TrackersListViewController: UIViewController {
     collectionView.delegate = self
     collectionView.dataSource = self
     collectionView.contentInsetAdjustmentBehavior = .never
+    collectionView.allowsMultipleSelection = false
+    collectionView.clipsToBounds = true
+    
+    collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 100, right: 0)
+    collectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 100, right: 0)
     
     view.addSubview(collectionView)
     
@@ -188,10 +240,41 @@ final class TrackersListViewController: UIViewController {
     ])
   }
   
+  private func configureFilterButton() {
+    filterButton.translatesAutoresizingMaskIntoConstraints = false
+    let filtersButtonTitle = NSLocalizedString("filtersButtonTitle", comment: "")
+    filterButton.setTitle(filtersButtonTitle, for: .normal)
+    filterButton.setTitleColor(.white, for: .normal)
+    filterButton.backgroundColor = .blueYP
+    filterButton.addTarget(self, action: #selector(filterButtonTapped), for: .touchUpInside)
+    filterButton.layer.cornerRadius = 16
+    filterButton.layer.masksToBounds = true
+    
+    view.addSubview(filterButton)
+    
+    NSLayoutConstraint.activate([
+      filterButton.heightAnchor.constraint(equalToConstant: 50),
+      filterButton.widthAnchor.constraint(equalToConstant: 114),
+      
+      filterButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+      filterButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+    ])
+  }
+  
   // MARK: - Actions
   @objc private func addTrackerTapped() {
+    AnalyticsService.shared.sendReport(event: .click, screen: .trackersList, item: .addTracker)
     let viewController = TrackerTypeSelectionViewController()
     viewController.delegate = viewModel
+    let navController = UINavigationController(rootViewController: viewController)
+    navController.modalPresentationStyle = .pageSheet
+    present(navController, animated: true)
+  }
+  
+  @objc private func filterButtonTapped() {
+    AnalyticsService.shared.sendReport(event: .click, screen: .trackersList, item: .filter)
+    let viewModel = FilterViewModel(delegate: self.viewModel)
+    let viewController = FilterViewController(viewModel: viewModel)
     let navController = UINavigationController(rootViewController: viewController)
     navController.modalPresentationStyle = .pageSheet
     present(navController, animated: true)
@@ -235,7 +318,7 @@ extension TrackersListViewController: UICollectionViewDataSource {
     
     let model = viewModel.cellModel(position: ItemPosition(section: indexPath.section, item: indexPath.row))
     cell.delegate = self
-    cell.configureCell(with: model)
+    cell.configure(with: model)
     return cell
   }
 }
@@ -267,13 +350,78 @@ extension TrackersListViewController: UICollectionViewDelegateFlowLayout {
 }
 
 extension TrackersListViewController: UICollectionViewDelegate {
+  func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
+    guard indexPaths.count > 0 else { return nil }
+    
+    let indexPath = indexPaths[0]
+    let position = ItemPosition(section: indexPath.section, item: indexPath.row)
+    let isAlreadyPinned = viewModel.isAlreadyPinned(at: position)
+    
+    return UIContextMenuConfiguration(identifier: indexPath as NSCopying, previewProvider: nil) { [weak self] _ in
+      let pinAction = NSLocalizedString("pinAction", comment: "")
+      let unpinAction = NSLocalizedString("unpinAction", comment: "")
+      let editAction = NSLocalizedString("editAction", comment: "")
+      let deleteAction = NSLocalizedString("deleteAction", comment: "")
+      let deleteTrackerConfirmationTitle = NSLocalizedString("deleteTrackerConfirmationTitle", comment: "")
+      
+      let pin = UIAction(title: isAlreadyPinned ? unpinAction : pinAction) { _ in
+        self?.viewModel.didTapPinnedTracker(on: position)
+        AnalyticsService.shared.sendReport(event: .click, screen: .trackersList, item: .pinTracker)
+      }
+      let edit = UIAction(title: editAction) { _ in
+        guard let self else { return }
+        AnalyticsService.shared.sendReport(event: .click, screen: .trackersList, item: .editTracker)
+        self.showEditorViewController(tracker: self.viewModel.getTracker(at: position),
+                                      category: self.viewModel.getCategory(at: position))
+      }
+      let delete = UIAction(title: deleteAction, attributes: .destructive) { _ in
+        guard let self else { return }
+        AnalyticsService.shared.sendReport(event: .click, screen: .trackersList, item: .deleteTracker)
+        DeleteConfirmationAlert.present(on: self, title: deleteTrackerConfirmationTitle) { [weak self] in
+          self?.viewModel.didTapDeletedTracker(at: position)
+        }
+      }
+      return UIMenu(children: [pin, edit, delete])
+    }
+  }
   
+  func collectionView(_ collectionView: UICollectionView, contextMenuConfiguration configuration: UIContextMenuConfiguration, highlightPreviewForItemAt indexPath: IndexPath) -> UITargetedPreview? {
+    makeTargetedPreview(for: indexPath)
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, contextMenuConfiguration configuration: UIContextMenuConfiguration, dismissalPreviewForItemAt indexPath: IndexPath) -> UITargetedPreview? {
+    makeTargetedPreview(for: indexPath)
+  }
+  
+  private func makeTargetedPreview(for indexPath: IndexPath) -> UITargetedPreview? {
+    guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerViewCell else { return nil }
+    
+    let view = cell.previewView
+    let parameters = UIPreviewParameters()
+    parameters.backgroundColor = .clear
+    parameters.visiblePath = UIBezierPath(roundedRect: view.bounds, cornerRadius: 16)
+    return UITargetedPreview(view: view, parameters: parameters)
+  }
+  
+  private func showEditorViewController(tracker: Tracker, category: String) {
+    let trackerEditTitle = NSLocalizedString("trackerEditTitle", comment: "")
+    let editorViewModel = TrackerEditorViewModel(isRegularTracker: tracker.isRegular,
+                                                 titleView: trackerEditTitle,
+                                                 oldTracker: tracker,
+                                                 oldCategory: category)
+    editorViewModel.delegate = viewModel
+    let editorViewController = TrackerEditorViewController(viewModel: editorViewModel)
+    let navController = UINavigationController(rootViewController: editorViewController)
+    navController.modalPresentationStyle = .pageSheet
+    present(navController, animated: true)
+  }
 }
 
 // MARK: - TrackerCellDelegate
 extension TrackersListViewController: TrackerCellDelegate {
   func trackerCellDidTapDone(_ cell: TrackerViewCell) {
     guard let indexPath = collectionView.indexPath(for: cell) else { return }
+    AnalyticsService.shared.sendReport(event: .click, screen: .trackersList, item: .track)
     viewModel.didTapDone(at: ItemPosition(section: indexPath.section, item: indexPath.row))
   }
 }

@@ -8,15 +8,18 @@
 import UIKit
 
 final class OnboardingViewController: UIPageViewController {
+  // MARK: - Private Properties
   private let trackersScreenButton: UIButton = .init()
   private let pageControl: UIPageControl = .init()
   
-  private lazy var slideViews: [UIViewController] = {
+  private lazy var slideViewControllers: [UIViewController] = {
     let firstSlide = SlideViewController()
-    firstSlide.configureView(title: "Отслеживайте только то, что хотите", cover: UIImage(resource: .firstSlide))
+    let firstOnboardingSlideTitle = NSLocalizedString("firstOnboardingSlideTitle", comment: "")
+    firstSlide.configure(title: firstOnboardingSlideTitle, cover: UIImage(resource: .firstSlide))
     
+    let secondOnboardingSlideTitle = NSLocalizedString("secondOnboardingSlideTitle", comment: "")
     let secondSlide = SlideViewController()
-    secondSlide.configureView(title: "Даже если это не литры воды и йога", cover: UIImage(resource: .secondSlide))
+    secondSlide.configure(title: secondOnboardingSlideTitle, cover: UIImage(resource: .secondSlide))
     
     return [firstSlide, secondSlide]
   }()
@@ -30,12 +33,24 @@ final class OnboardingViewController: UIPageViewController {
     fatalError("init(coder:) has not been implemented")
   }
   
+  // MARK: - Lifecycle
   override func viewDidLoad() {
     super.viewDidLoad()
     
     configureUI()
   }
   
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    AnalyticsService.shared.sendReport(event: .open, screen: .onboarding)
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    AnalyticsService.shared.sendReport(event: .close, screen: .onboarding)
+  }
+  
+  // MARK: - Private Methods
   private func configureUI() {
     configurePages()
     configureTrackersScreenButton()
@@ -46,16 +61,17 @@ final class OnboardingViewController: UIPageViewController {
     dataSource = self
     delegate = self
     
-    if let first = slideViews.first {
+    if let first = slideViewControllers.first {
       setViewControllers([first], direction: .forward, animated: true)
     }
   }
   
   private func configureTrackersScreenButton() {
     trackersScreenButton.translatesAutoresizingMaskIntoConstraints = false
-    trackersScreenButton.setTitle("Вот это технологии!", for: .normal)
+    let buttonOnboardingTitle = NSLocalizedString("buttonOnboardingTitle", comment: "")
+    trackersScreenButton.setTitle(buttonOnboardingTitle, for: .normal)
     trackersScreenButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
-    trackersScreenButton.titleLabel?.textColor = .whiteYP
+    trackersScreenButton.setTitleColor(.whiteYP, for: .normal)
     trackersScreenButton.backgroundColor = .blackYP
     trackersScreenButton.layer.cornerRadius = 16
     trackersScreenButton.layer.masksToBounds = true
@@ -73,7 +89,7 @@ final class OnboardingViewController: UIPageViewController {
   
   private func configurePageControl() {
     pageControl.translatesAutoresizingMaskIntoConstraints = false
-    pageControl.numberOfPages = slideViews.count
+    pageControl.numberOfPages = slideViewControllers.count
     pageControl.currentPage = 0
     
     pageControl.currentPageIndicatorTintColor = .blackYP
@@ -87,6 +103,7 @@ final class OnboardingViewController: UIPageViewController {
     ])
   }
   
+  // MARK: - Actions
   @objc private func didTapTrackersScreenButton() {
     FirstLaunchService.shared.hasLaunchedBefore = true
     
@@ -101,9 +118,10 @@ final class OnboardingViewController: UIPageViewController {
   }
 }
 
+// MARK: - UIPageViewControllerDataSource
 extension OnboardingViewController: UIPageViewControllerDataSource {
   func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-    guard let viewControllerIndex = slideViews.firstIndex(of: viewController) else {
+    guard let viewControllerIndex = slideViewControllers.firstIndex(of: viewController) else {
       return nil
     }
     
@@ -113,28 +131,29 @@ extension OnboardingViewController: UIPageViewControllerDataSource {
       return nil
     }
     
-    return slideViews[previousIndex]
+    return slideViewControllers[previousIndex]
   }
   
   func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-    guard let viewControllerIndex = slideViews.firstIndex(of: viewController) else {
+    guard let viewControllerIndex = slideViewControllers.firstIndex(of: viewController) else {
       return nil
     }
     
     let nextIndex = viewControllerIndex + 1
     
-    guard nextIndex < slideViews.count else {
+    guard nextIndex < slideViewControllers.count else {
       return nil
     }
     
-    return slideViews[nextIndex]
+    return slideViewControllers[nextIndex]
   }
 }
 
+// MARK: - UIPageViewControllerDelegate
 extension OnboardingViewController: UIPageViewControllerDelegate {
   func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
     if let currentViewController = pageViewController.viewControllers?.first,
-       let currentIndex = slideViews.firstIndex(of: currentViewController) {
+       let currentIndex = slideViewControllers.firstIndex(of: currentViewController) {
       
       pageControl.currentPage = currentIndex
     }

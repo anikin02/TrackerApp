@@ -15,7 +15,15 @@ protocol TrackerRecordStoreDelegate: AnyObject {
   func trackerRecordStoreDidUpdate()
 }
 
-final class TrackerRecordStore: NSObject {
+protocol TrackerRecordStoreProtocol: AnyObject {
+  var delegate: TrackerRecordStoreDelegate? { get set }
+  var records: [TrackerRecord] { get }
+  
+  func addNewTrackerRecord(trackerRecord: TrackerRecord) throws
+  func removeTrackerRecord(trackerRecord: TrackerRecord) throws
+}
+
+final class TrackerRecordStore: NSObject, TrackerRecordStoreProtocol {
   weak var delegate: TrackerRecordStoreDelegate?
   var records: [TrackerRecord] {
     (fetchedResultsController.fetchedObjects ?? []).compactMap(getTrackerRecordModel)

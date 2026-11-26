@@ -5,6 +5,8 @@
 //  Created by Данил on 08/11/2026.
 //
 
+import Foundation
+
 enum WeekDay: Int, CaseIterable, Encodable, Decodable {
   case sunday = 1
   case monday = 2
@@ -18,25 +20,25 @@ enum WeekDay: Int, CaseIterable, Encodable, Decodable {
 extension WeekDay {
   var title: String {
     switch self {
-      case .monday: return "Понедельник"
-      case .tuesday: return "Вторник"
-      case .wednesday: return "Среда"
-      case .thursday: return "Четверг"
-      case .friday: return "Пятница"
-      case .saturday: return "Суббота"
-      case .sunday: return "Воскресенье"
+      case .monday: return NSLocalizedString("mondayTitle", comment: "")
+      case .tuesday: return NSLocalizedString("tuesdayTitle", comment: "")
+      case .wednesday: return NSLocalizedString("wednesdayTitle", comment: "")
+      case .thursday: return NSLocalizedString("thursdayTitle", comment: "")
+      case .friday: return NSLocalizedString("fridayTitle", comment: "")
+      case .saturday: return NSLocalizedString("saturdayTitle", comment: "")
+      case .sunday: return NSLocalizedString("sundayTitle", comment: "")
     }
   }
   
   var shortTitle: String {
     switch self {
-      case .monday: return "Пн"
-      case .tuesday: return "Вт"
-      case .wednesday: return "Ср"
-      case .thursday: return "Чт"
-      case .friday: return "Пт"
-      case .saturday: return "Сб"
-      case .sunday: return "Вс"
+      case .monday: return NSLocalizedString("mondayShortTitle", comment: "")
+      case .tuesday: return NSLocalizedString("mondayShortTitle", comment: "")
+      case .wednesday: return NSLocalizedString("mondayShortTitle", comment: "")
+      case .thursday: return NSLocalizedString("mondayShortTitle", comment: "")
+      case .friday: return NSLocalizedString("mondayShortTitle", comment: "")
+      case .saturday: return NSLocalizedString("mondayShortTitle", comment: "")
+      case .sunday: return NSLocalizedString("mondayShortTitle", comment: "")
     }
   }
   
@@ -46,7 +48,7 @@ extension WeekDay {
   
   static func scheduleDescription(for days: Set<WeekDay>) -> String {
     if days.count == 7 {
-      return "Каждый день"
+      return NSLocalizedString("everyDayTitle", comment: "")
     } else {
       return days
         .filter { days.contains($0) }

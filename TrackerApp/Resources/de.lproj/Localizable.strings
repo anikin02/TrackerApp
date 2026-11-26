@@ -1,0 +1,98 @@
+/*
+  Localizable.strings
+  TrackerApp
+
+  Created by Данил on 23/11/2026.
+  
+*/
+
+// MARK: - Onboarding
+firstOnboardingSlideTitle = "Verfolge nur das, was du willst";
+secondOnboardingSlideTitle = "Auch wenn es nicht um Wasser und Yoga geht";
+buttonOnboardingTitle = "Das nenne ich Technik!";
+
+// MARK: - TrackersList
+trackersListTitle = "Tracker";
+searchPlaceholder = "Suchen";
+filtersButtonTitle = "Filter";
+pinnedCategoryTitle = "Angeheftet";
+deleteTrackerConfirmationTitle = "Möchtest du diesen Tracker wirklich löschen?";
+
+// MARK: - Context Menu
+pinAction = "Anheften";
+unpinAction = "Lösen";
+editAction = "Bearbeiten";
+deleteAction = "Löschen";
+
+// MARK: - Statistics
+statisticsTitle = "Statistik";
+completedTrackersStatTitle = "Abgeschlossene Tracker";
+bestPeriodStatTitle = "Beste Serie";
+perfectDaysStatTitle = "Perfekte Tage";
+averageValueStatTitle = "Durchschnitt";
+
+// MARK: - TrackerTypeSelection
+trackerTypeSelectionTitle = "Tracker erstellen";
+unregularTrackerButtonTitle = "Einmaliges Ereignis";
+regularTrackerButtonTitle = "Gewohnheit";
+
+// MARK: - TrackerEditor
+regularTrackerCreationTitle = "Neuer Tracker";
+unregularTrackerCreationTitle = "Neues einmaliges Ereignis";
+trackerEditTitle = "Tracker bearbeiten";
+placeholderTrackerName = "Trackername eingeben";
+categoryOption = "Kategorie";
+scheduleOption = "Zeitplan";
+colorOption = "Farbe";
+createTrackerButton = "Erstellen";
+editTrackerButton = "Speichern";
+cancelTrackerButton = "Abbrechen";
+
+// MARK: - CategoryEditor
+categoryCreationTitle = "Neue Kategorie";
+categoryEditTitle = "Kategorie bearbeiten";
+placeholderCategoryName = "Kategoriename eingeben";
+categoryEditorDoneButton = "Fertig";
+
+// MARK: - Empty States
+emptyTrackersListTitle = "Was möchtest du tracken?";
+emptySearchTitle = "Nichts gefunden";
+emptyStatisticsTitle = "Noch nichts zu analysieren";
+emptyCategoriesTitle = "Gewohnheiten und Ereignisse lassen sich\nnach Themen gruppieren";
+
+// MARK: - Filters
+allTrackersFilterTitle = "Alle Tracker";
+todayTrackersFilterTitle = "Tracker für heute";
+completedTrackersFilterTitle = "Abgeschlossen";
+uncompletedTrackersFilterTitle = "Nicht abgeschlossen";
+
+// MARK: - Schedule
+scheduleSelectionTitle = "Zeitplan";
+everyDayTitle = "Jeden Tag";
+doneButtonTitle = "Fertig";
+
+// MARK: - WeekDays
+mondayTitle = "Montag";
+tuesdayTitle = "Dienstag";
+wednesdayTitle = "Mittwoch";
+thursdayTitle = "Donnerstag";
+fridayTitle = "Freitag";
+saturdayTitle = "Samstag";
+sundayTitle = "Sonntag";
+
+mondayShortTitle = "Mo";
+tuesdayShortTitle = "Di";
+wednesdayShortTitle = "Mi";
+thursdayShortTitle = "Do";
+fridayShortTitle = "Fr";
+saturdayShortTitle = "Sa";
+sundayShortTitle = "So";
+
+// MARK: - CategorySelection
+categorySelectionTitle = "Kategorie";
+addCategoryButtonTitle = "Kategorie hinzufügen";
+deleteCategoryConfirmationTitle = "Möchtest du diese Kategorie wirklich löschen?";
+
+// MARK: - Alert
+cancelButtonTitle = "Abbrechen";
+deleteButtonTitle = "Löschen";
