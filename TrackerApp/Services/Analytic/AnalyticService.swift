@@ -53,7 +53,11 @@ final class AnalyticsService {
   private init() {}
   
   func activateAnalyticsService() {
-    if let configuration = AppMetricaConfiguration(apiKey: "3b5b5162-6a3a-45a7-a962-7ca7e40bd936") {
+    guard let key = Bundle.main.object(forInfoDictionaryKey: "AnalyticsAPIKey") as? String,
+          !key.isEmpty else {
+      fatalError("AnalyticsAPIKey не найден в Info.plist")
+    }
+    if let configuration = AppMetricaConfiguration(apiKey: key) {
       AppMetrica.activate(with: configuration)
     }
   }
